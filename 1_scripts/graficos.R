@@ -4,6 +4,8 @@
 # carregando pacotes
 library(tidyverse)
 library(readxl)
+library(geojsonio)
+
 
 # Importando dados (já manipulados no excel)
 
@@ -53,26 +55,29 @@ tapply(Medico_dfs_geral$retencao_geral, Medico_dfs_geral$UF, summary)
 
 # Criando mapa de regiões de saúde considerando os percentis de retenção. 
 
-teste <- Medico_dfs_geral |> 
-  mutate(percentil = case_when(retencao_geral <= quantile(retencao_geral, probs = 0.10) ~ 1,
-                               retencao_geral > quantile(retencao_geral, probs = 0.10) &
-                               retencao_geral <= quantile(retencao_geral, probs = 0.20) ~ 2,
-                               retencao_geral > quantile(retencao_geral, probs = 0.20) &
-                               retencao_geral <= quantile(retencao_geral, probs = 0.30) ~ 3,
-                               retencao_geral > quantile(retencao_geral, probs = 0.30) &
-                               retencao_geral <= quantile(retencao_geral, probs = 0.40) ~ 4,
-                               retencao_geral > quantile(retencao_geral, probs = 0.40) &
-                               retencao_geral <= quantile(retencao_geral, probs = 0.50) ~ 5,
-                               retencao_geral > quantile(retencao_geral, probs = 0.50) &
-                               retencao_geral <= quantile(retencao_geral, probs = 0.60) ~ 6,
-                               retencao_geral > quantile(retencao_geral, probs = 0.60) &
-                               retencao_geral <= quantile(retencao_geral, probs = 0.70) ~ 7,
-                               retencao_geral > quantile(retencao_geral, probs = 0.70) &
-                                 retencao_geral <= quantile(retencao_geral, probs = 0.80) ~ 8,
-                               retencao_geral > quantile(retencao_geral, probs = 0.80) &
-                                 retencao_geral <= quantile(retencao_geral, probs = 0.90) ~ 9,
-                               retencao_geral > quantile(retencao_geral, probs = 0.90) ~ 10))
-  
+spdf <- geojson_read("1_scripts/shape file regioes saude.json",  what = "sp")
 
+spdf_region <- spdf[ spdf@data$est_id == "52" , ]
 
+spdf_fortified <- sf::st_as_sf(spdf)
 
+spdf_fortified |>
+  left_join(retencao, by = 
+              c("reg_id"="cod_regiao_saude")) |>
+  rename(Retenção = retencao_geral) |> 
+  ggplot() +
+  geom_sf(aes(fill = Retenção)) +
+  theme_minimal() +
+  scale_fill_gradient(low = "#d43621",
+                      high = "#91e17c", 
+                      n.breaks = 5) +
+  theme(
+    axis.line = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) 
