@@ -42,9 +42,9 @@ Medico_dfs_geral <- Medico_dfs_geral |>
 
 # Calculadno medidas resumo da variável "retencao_geral"
 
-summary(Medico_dfs_geral[,7])
+summary(Medico_dfs_geral[,6])
 
-desv_p <- lapply(Medico_dfs_geral[,7], sd)
+desv_p <- lapply(Medico_dfs_geral[,6], sd)
 desv_p
 
 # Construindo boxplot por região
@@ -79,12 +79,17 @@ Medico_dfs_geral <- Medico_dfs_geral |>
                                          regiao == "Região Nordeste" ~ 5))
 
 
+library(ggplot2)
+library(dplyr)
+library(forcats)
+
 Medico_dfs_geral |>
   rename(Região = regiao) |>
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral, fill = Região)) +
   geom_boxplot() +
   coord_flip() +
+  geom_hline(yintercept = 0.512, linetype = "dashed", color = "red") +
   theme_minimal() +
   xlab("UF") +
   ylab("Retenção") +
@@ -93,6 +98,38 @@ Medico_dfs_geral |>
     axis.text.y = element_text(size = 12)   
   )
 
+## Gráfico de retenção vs oferta 
+
+retencao_uf <- Medico_dfs_geral |> 
+                    group_by(cod_uf, regiao) |> 
+                    summarise(media_retencao = mean(retencao_geral))
+
+razao <- read_excel("0_dados/razao.xlsx")
+
+
+tbl_uf <- razao |> 
+  inner_join(retencao_uf, by = "cod_uf") 
+
+tbl_uf |> 
+  rename(Região = regiao) |> 
+  ggplot(aes(x = media_retencao, y = Razão)) + 
+  geom_point() + 
+  geom_label(aes(label = UF, fill = Região)) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  theme_minimal() + 
+  xlab("Retenção") + 
+  ylab("Médicos por 1000 habitantes") +
+  theme(
+    text = element_text(size = 16),          
+    axis.title = element_text(size = 14),    
+    axis.text = element_text(size = 14),     
+    legend.title = element_text(size = 16),  
+    legend.text = element_text(size = 14)    
+  )
+
+Smodelo <- lm(Razão ~ media_retencao, tbl_uf)
+
+summary(modelo)
 
 # Calculando medidas resumo da variável "retencao_geral" por UF
 tapply(Medico_dfs_geral$retencao_geral, Medico_dfs_geral$UF, summary)
