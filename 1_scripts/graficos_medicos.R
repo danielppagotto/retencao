@@ -78,10 +78,7 @@ Medico_dfs_geral <- Medico_dfs_geral |>
                                          regiao == "Região Norte" ~ 4,
                                          regiao == "Região Nordeste" ~ 5))
 
-
-library(ggplot2)
-library(dplyr)
-library(forcats)
+# por uf
 
 Medico_dfs_geral |>
   rename(Região = regiao) |>
@@ -104,7 +101,7 @@ retencao_uf <- Medico_dfs_geral |>
                     group_by(cod_uf, regiao) |> 
                     summarise(media_retencao = mean(retencao_geral))
 
-razao <- read_excel("0_dados/razao.xlsx")
+razao <- read_excel("0_dados/razao_medicos.xlsx")
 
 
 tbl_uf <- razao |> 
@@ -130,16 +127,12 @@ tbl_uf |>
 cor(tbl_uf$Razão, tbl_uf$media_retencao)
 
 
-Smodelo <- lm(Razão ~ media_retencao, tbl_uf)
+modelo <- lm(Razão ~ media_retencao, tbl_uf)
 
 summary(modelo)
 
-# Calculando medidas resumo da variável "retencao_geral" por UF
-tapply(Medico_dfs_geral$retencao_geral, Medico_dfs_geral$UF, summary)
-
 
 # Criando mapa de regiões de saúde considerando os percentis de retenção. 
-
 
 # preparando os shapes dos mapas
 
@@ -175,10 +168,6 @@ capitais_coord <-
   select(cod_municipio, municipio, longitude, latitude) |> 
   mutate(latitude = as.numeric(latitude))
 
-#
-
-
-
 library(ggplot2)
 
 # Defina os limites de longitude e latitude para focar no Brasil
@@ -205,15 +194,10 @@ mapa <- spdf_fortified |>
   coord_sf(xlim = limite_long, ylim = limite_lat)
 
 mapa + 
-#  ggspatial::annotation_scale(
-#    location = "tr",
-#    bar_cols = c("grey60", "white")http://127.0.0.1:46997/graphics/d580ee10-96dd-4193-b40c-14a0e0f05c17.png
-#  )  + 
   ggspatial::annotation_north_arrow(
     style = ggspatial::north_arrow_nautical(
       fill = c("grey40", "white"),
-      line_col = "grey20")
-  )
+      line_col = "grey20"))
 
 
 
