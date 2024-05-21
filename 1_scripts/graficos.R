@@ -127,6 +127,9 @@ tbl_uf |>
     legend.text = element_text(size = 14)    
   )
 
+cor(tbl_uf$Razão, tbl_uf$media_retencao)
+
+
 Smodelo <- lm(Razão ~ media_retencao, tbl_uf)
 
 summary(modelo)
