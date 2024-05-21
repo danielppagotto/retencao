@@ -135,31 +135,36 @@ summary(modelo)
 # Criando mapa de regiões de saúde considerando os percentis de retenção. 
 
 # preparando os shapes dos mapas
+library(sf)
+library(ggplot2)
+library(ggrepel)
+library(ggspatial)
+library(dplyr)
+library(geojsonio)
 
-data("World")
+data("World", package = "rnaturalearth")
+
 latam <- World |> filter(continent == "South America")
 
+# Converter para sf
 latam <- sf::st_as_sf(latam)
-latam <- st_set_crs(latam, sf::st_crs(spdf_fortified))
 
-Medico_dfs_geral$cod_regiao_saude <- as.integer(Medico_dfs_geral$cod_regiao_saude)
-
-spdf <- geojson_read("1_scripts/shape file regioes saude.json",  what = "sp")
-
+# Carregar shapefile GeoJSON e converter para sf
+spdf <- geojson_read("1_scripts/shape file regioes saude.json", what = "sp")
 spdf_fortified <- sf::st_as_sf(spdf)
 
+# Definir o CRS de latam para ser o mesmo que o do shapefile carregado
+sf::st_crs(latam) <- sf::st_crs(spdf_fortified)
 
-# Pegando as coordenadas de capitais 
+# Converter códigos de região de saúde para inteiros
+Medico_dfs_geral$cod_regiao_saude <- as.integer(Medico_dfs_geral$cod_regiao_saude)
 
-## Adicionando uma última camada das capitais 
-
+# Coordenadas das capitais
 capitais <- c("1100205","1302603","1200401","5002704","1600303","5300108",
               "1400100","5103403","1721000","3550308","2211001","3304557",
               "1501402","5208707","2927408","4205407","2111300","2704302",
               "4314902","4106902","3106200","2304400","2611606","2507507",
               "2800308","2408102","3205309")
-
-
 
 capitais_coord <- 
   hierarquia_completa |>
@@ -168,27 +173,22 @@ capitais_coord <-
   select(cod_municipio, municipio, longitude, latitude) |> 
   mutate(latitude = as.numeric(latitude))
 
-# Defina os limites de longitude e latitude para focar no Brasil
+# Definir limites de longitude e latitude para focar no Brasil
 limite_long <- c(-75, -28)  # limites de longitude
 limite_lat <- c(-33, 4)     # limites de latitude
 
+# Criar o mapa
 mapa <- spdf_fortified |>
-  left_join(Medico_dfs_geral, by = 
-              c("reg_id"="cod_regiao_saude")) |>
+  left_join(Medico_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +
-  geom_sf(data = latam, 
-          fill = "lightgrey", color = "black") + 
+  geom_sf(data = latam, fill = "lightgrey", color = "black") + 
   geom_sf(aes(fill = Retenção)) +
-  geom_point(data = capitais_coord, 
-             aes(x = longitude, y = latitude), color = "blue", size = 1) +
-  geom_text_repel(data = capitais_coord,
-                  aes(label = municipio, longitude, y = latitude)) +
+  geom_point(data = capitais_coord, aes(x = longitude, y = latitude), color = "blue", size = 1) +
+  geom_text_repel(data = capitais_coord, aes(label = municipio, longitude, y = latitude)) +
   xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
-  scale_fill_gradient(low = "#d43621",
-                      high = "#91e17c", 
-                      n.breaks = 5) +
+  scale_fill_gradient(low = "#d43621", high = "#91e17c", n.breaks = 5) +
   coord_sf(xlim = limite_long, ylim = limite_lat)
 
 mapa + 
@@ -196,6 +196,4 @@ mapa +
     style = ggspatial::north_arrow_nautical(
       fill = c("grey40", "white"),
       line_col = "grey20"))
-
-
 
