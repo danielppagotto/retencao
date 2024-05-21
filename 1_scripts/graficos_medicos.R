@@ -140,7 +140,7 @@ data("World")
 latam <- World |> filter(continent == "South America")
 
 latam <- sf::st_as_sf(latam)
-latam <- st_set_crs(latam, st_crs(spdf_fortified))
+latam <- st_set_crs(latam, sf::st_crs(spdf_fortified))
 
 Medico_dfs_geral$cod_regiao_saude <- as.integer(Medico_dfs_geral$cod_regiao_saude)
 
@@ -167,8 +167,6 @@ capitais_coord <-
   filter(cod_municipiodv %in% capitais) |> 
   select(cod_municipio, municipio, longitude, latitude) |> 
   mutate(latitude = as.numeric(latitude))
-
-library(ggplot2)
 
 # Defina os limites de longitude e latitude para focar no Brasil
 limite_long <- c(-75, -28)  # limites de longitude
