@@ -13,7 +13,7 @@ library(ggrepel)
 
 # Importando dados
 
-Medico_dfs_geral <- read_delim("0_dados/Medico_retencao_geral.csv", 
+Enfermeiro_dfs_geral <- read_delim("0_dados/Enfermeiro_retencao_geral.csv", 
                                delim = ";", 
                                escape_double = FALSE, 
                                trim_ws = TRUE) |> 
@@ -32,22 +32,16 @@ hierarquia_atualizada <- read_csv("0_dados/hierarquia_atualizada.csv") |>
 
 # juntando tudo 
 
-Medico_dfs_geral <- Medico_dfs_geral |> 
+Enfermeiro_dfs_geral <- Enfermeiro_dfs_geral |> 
                       left_join(hierarquia_atualizada, 
                                 by = c("regiao_saude"="cod_regsaud")) |> 
                       rename(cod_regiao_saude = regiao_saude,
                              nome_regiao_saude = regiao_saude.y)
 
-# Calculadno medidas resumo da variável "retencao_geral"
-
-summary(Medico_dfs_geral[,6])
-
-desv_p <- lapply(Medico_dfs_geral[,6], sd)
-desv_p
 
 # Construindo boxplot por região
 
-Medico_dfs_geral |> 
+Enfermeiro_dfs_geral |> 
   rename(Região = regiao) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
                            .desc = TRUE), y=retencao_geral, 
@@ -64,11 +58,11 @@ Medico_dfs_geral |>
 
 # Calculando medidas resumo da variável "retencao_geral" por Região
 
-tapply(Medico_dfs_geral$retencao_geral, Medico_dfs_geral$regiao, summary)
+tapply(Enfermeiro_dfs_geral$retencao_geral, Enfermeiro_dfs_geral$regiao, summary)
 
 # Construindo boxplot por UF
 
-Medico_dfs_geral <- Medico_dfs_geral |> 
+Enfermeiro_dfs_geral <- Enfermeiro_dfs_geral |> 
                       mutate(regiao_order = 
                                case_when(regiao == "Região Sul" ~ 1,
                                          regiao == "Região Sudeste" ~ 2,
@@ -78,7 +72,7 @@ Medico_dfs_geral <- Medico_dfs_geral |>
 
 # por uf
 
-Medico_dfs_geral |>
+Enfermeiro_dfs_geral |>
   rename(Região = regiao) |>
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral, fill = Região)) +
@@ -95,11 +89,11 @@ Medico_dfs_geral |>
 
 ## Gráfico de retenção vs oferta 
 
-retencao_uf <- Medico_dfs_geral |> 
+retencao_uf <- Enfermeiro_dfs_geral |> 
                     group_by(cod_uf, regiao) |> 
                     summarise(media_retencao = mean(retencao_geral))
 
-razao <- read_excel("0_dados/razao_medicos.xlsx")
+razao <- read_excel("0_dados/razao_enfermeiros.xls")
 
 
 tbl_uf <- razao |> 
@@ -113,7 +107,7 @@ tbl_uf |>
   geom_smooth(method = "lm", se = FALSE) + 
   theme_minimal() + 
   xlab("Retenção") + 
-  ylab("Médicos por 1000 habitantes") +
+  ylab("Enfermeiros por 1000 habitantes") +
   theme(
     text = element_text(size = 16),          
     axis.title = element_text(size = 14),    
@@ -140,7 +134,7 @@ latam <- World |> filter(continent == "South America")
 latam <- sf::st_as_sf(latam)
 latam <- st_set_crs(latam, st_crs(spdf_fortified))
 
-Medico_dfs_geral$cod_regiao_saude <- as.integer(Medico_dfs_geral$cod_regiao_saude)
+Enfermeiro_dfs_geral$cod_regiao_saude <- as.integer(Enfermeiro_dfs_geral$cod_regiao_saude)
 
 spdf <- geojson_read("1_scripts/shape file regioes saude.json",  what = "sp")
 
@@ -173,7 +167,7 @@ limite_long <- c(-75, -28)  # limites de longitude
 limite_lat <- c(-33, 4)     # limites de latitude
 
 mapa <- spdf_fortified |>
-  left_join(Medico_dfs_geral, by = 
+  left_join(Enfermeiro_dfs_geral, by = 
               c("reg_id"="cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +

@@ -40,12 +40,6 @@ Medico_dfs_geral <- Medico_dfs_geral |>
                       rename(cod_regiao_saude = regiao_saude,
                              nome_regiao_saude = regiao_saude.y)
 
-# Calculadno medidas resumo da variável "retencao_geral"
-
-summary(Medico_dfs_geral[,6])
-
-desv_p <- lapply(Medico_dfs_geral[,6], sd)
-desv_p
 
 # Construindo boxplot por região
 
