@@ -9,6 +9,7 @@ library(RODBC)
 library(tmap)
 library(ggspatial)
 library(ggrepel)
+library(sf)
 
 
 # Importando dados
