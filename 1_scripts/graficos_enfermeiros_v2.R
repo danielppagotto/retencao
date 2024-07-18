@@ -16,8 +16,8 @@ library(sf)
 # Importando dados --------------------------------------------------------
 
 # Dados de retencao
-Dentistas_dfs_geral <- 
-  read_delim("0_dados/Cirurgiões-dentistas_retencao_geral.csv", 
+Enfermeiros_dfs_geral <- 
+  read_delim("0_dados/Enfermeiro_retencao_geral.csv", 
              delim = ";", 
              escape_double = FALSE, 
              trim_ws = TRUE) |> 
@@ -40,7 +40,7 @@ hierarquia_atualizada <-
 
 # juntando as bases
 
-Dentistas_dfs_geral <- Dentistas_dfs_geral |> 
+Enfermeiros_dfs_geral <- Enfermeiros_dfs_geral |> 
               left_join(hierarquia_atualizada, 
                         by = c("regiao_saude"="cod_regsaud")) |> 
               rename(cod_regiao_saude = regiao_saude,
@@ -49,14 +49,14 @@ Dentistas_dfs_geral <- Dentistas_dfs_geral |>
 # Analises ----------------------------------------------------------------
 # 1) Boxplot por regiao ------------------------------------------------------
 
-medianas_regiao <- Dentistas_dfs_geral %>%
+medianas_regiao <- Enfermeiros_dfs_geral %>%
   rename(Região = regiao) %>%
   mutate(Região = str_replace(Região, "^Região ", "")) %>%
   group_by(Região) %>%
   summarize(mediana = median(retencao_geral, na.rm = TRUE)) %>%
   ungroup()
 
-Dentistas_dfs_geral |> 
+Enfermeiros_dfs_geral |> 
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
@@ -85,7 +85,7 @@ Dentistas_dfs_geral |>
 # Calculando medidas resumo da variável "retencao_geral" por Região
 
 media_uf <- 
-  Dentistas_dfs_geral |> 
+  Enfermeiros_dfs_geral |> 
   group_by(uf) |> 
   summarise(media = mean(retencao_geral))
 
@@ -94,7 +94,7 @@ mean(Dentistas_dfs_geral$retencao_geral)
 
 # Construindo boxplot por UF ----------------------------------------------
 
-Dentistas_dfs_geral <- Dentistas_dfs_geral |> 
+Enfermeiros_dfs_geral <- Enfermeiros_dfs_geral |> 
                       mutate(regiao_order = 
                                case_when(regiao == "Região Sul" ~ 1,
                                          regiao == "Região Sudeste" ~ 2,
@@ -104,28 +104,28 @@ Dentistas_dfs_geral <- Dentistas_dfs_geral |>
 
 # por uf
 
-median(Dentistas_dfs_geral$retencao_geral)
+median(Enfermeiros_dfs_geral$retencao_geral)
 
 # Calculando a mediana para cada grupo
-medianas <- Dentistas_dfs_geral %>%
+medianas <- Enfermeiros_dfs_geral %>%
   rename(Região = regiao) %>%
   group_by(uf, Região) %>%
   summarize(mediana = median(retencao_geral), .groups = 'drop') |> 
   filter(uf != "Distrito Federal")
 
 # Criando o gráfico por UF
-Dentistas_regioes <- 
-  Dentistas_dfs_geral |>
+Enfermeiros_dfs_geral <- 
+  Enfermeiros_dfs_geral |>
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-Dentistas_regioes |> 
+Enfermeiros_dfs_geral |> 
   filter(uf != "Distrito Federal") |> 
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região)) +
   coord_flip() +
-  geom_hline(yintercept = 0.670, 
+  geom_hline(yintercept = 0.6197964, 
              linetype = "dashed", 
              color = "red") +
   theme_minimal() +
@@ -203,7 +203,7 @@ spdf_fortified <- sf::st_as_sf(spdf)
 sf::st_crs(latam) <- sf::st_crs(spdf_fortified)
 
 # Converter códigos de região de saúde para inteiros
-Dentistas_dfs_geral$cod_regiao_saude <- as.integer(Dentistas_dfs_geral$cod_regiao_saude)
+Enfermeiros_dfs_geral$cod_regiao_saude <- as.integer(Enfermeiros_dfs_geral$cod_regiao_saude)
 
 # Coordenadas das capitais
 capitais <- c("1100205","1302603","1200401","5002704","1600303","5300108",
@@ -225,7 +225,7 @@ limite_lat <- c(-33, 4)     # limites de latitude
 
 # Criar o mapa
 mapa <- spdf_fortified |>
-  left_join(Dentistas_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
+  left_join(Enfermeiros_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +
   geom_sf(data = spdf_fortified, fill = "lightgrey", color = "black") + 

@@ -74,12 +74,12 @@ Tec_aux_enf_dfs_geral |>
       axis.title.x = element_text(size = 16),
       axis.title.y = element_text(size = 16),
       legend.position = "none"
-    ) +
-  geom_text(data = medianas_regiao, 
-            aes(x = Região, y = mediana, label = round(mediana, 2)),
-            position = position_nudge(x = 0.2, 
-                                      y = -0.02), 
-            size = 5)
+    )
+#  geom_text(data = medianas_regiao, 
+#            aes(x = Região, y = mediana, label = round(mediana, 2)),
+#            position = position_nudge(x = 0.2, 
+#                                      y = -0.02), 
+#            size = 5)
 
 # Calculando medidas resumo da variável "retencao_geral" por Região
 
@@ -124,20 +124,20 @@ Tec_aux_regioes |>
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região)) +
   coord_flip() +
-  geom_hline(yintercept = 0.510, 
+  geom_hline(yintercept = 0.6839712, 
              linetype = "dashed", 
              color = "red") +
   theme_minimal() +
   xlab("UF") +
   ylab("Taxa de Retenção") +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) + 
-  geom_text(data = medianas, aes(x = uf, y = mediana, label = round(mediana, 2)), 
-            hjust = -0.3, size = 4) +  # Ajuste hjust e size conforme necessário
-  theme(
-    axis.text.x = element_text(size = 16),  
-    axis.text.y = element_text(size = 16),
-    legend.position = "bottom"
-  )
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25))
+#  geom_text(data = medianas, aes(x = uf, y = mediana, label = round(mediana, 2)), 
+#            hjust = -0.3, size = 4) +  # Ajuste hjust e size conforme necessário
+#  theme(
+#    axis.text.x = element_text(size = 16),  
+#    axis.text.y = element_text(size = 16),
+#    legend.position = "bottom"
+#  )
 
 
 # Retencao vs densidade ---------------------------------------------------
