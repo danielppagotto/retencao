@@ -17,7 +17,7 @@ library(sf)
 
 # Dados de retencao
 Medico_dfs_geral <- 
-  read_delim("0_dados/Medico_retencao_geral.csv", 
+  read_delim("0_dados/Médico_retencao_geral.csv", 
              delim = ";", 
              escape_double = FALSE, 
              trim_ws = TRUE) |> 
@@ -227,7 +227,7 @@ mapa <- spdf_fortified |>
   left_join(Medico_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +
-  geom_sf(data = latam, fill = "lightgrey", color = "black") + 
+  geom_sf(data = spdf_fortified, fill = "lightgrey", color = "black") + 
   geom_sf(aes(fill = Retenção)) +
   geom_point(data = capitais_coord, aes(x = longitude, y = latitude), color = "blue", size = 1) +
   geom_text_repel(data = capitais_coord, aes(label = municipio, longitude, y = latitude)) +
