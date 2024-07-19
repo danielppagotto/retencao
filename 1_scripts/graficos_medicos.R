@@ -17,7 +17,7 @@ library(sf)
 
 # Dados de retencao
 Medico_dfs_geral <- 
-  read_delim("0_dados/Médico_retencao_geral.csv", 
+  read_delim("~/GitHub/retencao/0_dados/Médico_retencao_geral.csv", 
              delim = ";", 
              escape_double = FALSE, 
              trim_ws = TRUE) |> 
@@ -26,12 +26,8 @@ Medico_dfs_geral <-
 
 # Dados da hierarquia
 
-hierarquia_completa <- 
-  read_csv("0_dados/hierarquia_atualizada.csv") 
-
-
 hierarquia_atualizada <- 
-  read_csv("0_dados/hierarquia_atualizada.csv") |> 
+  read_csv("~/GitHub/retencao/0_dados/hierarquia_atualizada.csv") |> 
       select(regiao, cod_uf, uf, 
              cod_regsaud, regiao_saude) |> 
       mutate(cod_regsaud = as.character(cod_regsaud)) |> 
@@ -57,7 +53,8 @@ medianas_regiao <- Medico_dfs_geral %>%
   summarize(mediana = median(retencao_geral, na.rm = TRUE)) %>%
   ungroup()
 
-Medico_dfs_geral |> 
+grafico_regiao <- 
+  Medico_dfs_geral |> 
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
@@ -81,6 +78,11 @@ Medico_dfs_geral |>
             position = position_nudge(x = 0.2, 
                                       y = -0.02), 
             size = 5)
+
+
+ggsave(grafico_regiao, filename = "retencao_regiao.pdf",
+       width = 3000, height = 2500, units = "px", dpi = 300)
+
 
 # Calculando medidas resumo da variável "retencao_geral" por Região
 
@@ -119,7 +121,8 @@ Medicos_regioes <-
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-Medicos_regioes |> 
+grafico_uf <- 
+  Medicos_regioes |> 
   filter(uf != "Distrito Federal") |> 
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral)) +
@@ -140,6 +143,8 @@ Medicos_regioes |>
     legend.position = "bottom"
   )
 
+ggsave(grafico_uf, filename = "grafico_uf.pdf",
+       width = 3000, height = 2500, units = "px", dpi = 300)
 
 # Retencao vs densidade ---------------------------------------------------
 
@@ -148,7 +153,7 @@ retencao_uf <- Medico_dfs_geral |>
                     group_by(cod_uf, uf, regiao) |> 
                     summarise(media_retencao = mean(retencao_geral))
 
-razao <- read_excel("0_dados/razao_medicos.xlsx")
+razao <- read_excel("~/GitHub/retencao/0_dados/razao_medicos.xlsx")
 
 
 tbl_uf <- razao |> 
@@ -163,7 +168,10 @@ p_value <- cor_test$p.value
 p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
 
 # Criar o gráfico com a anotação do coeficiente de correlação
-tbl_uf |> 
+
+
+grafico_razao <- 
+  tbl_uf |> 
   rename(Região = regiao) |> 
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x = media_retencao, y = Razão)) + 
@@ -187,10 +195,13 @@ tbl_uf |>
            label = paste("r =", r, ",", p_text),
            size = 6, hjust = 1)
 
+grafico_razao
 
 r <- cor.test(tbl_uf$Razão, tbl_uf$media_retencao)
 r
 
+ggsave(grafico_razao, filename = "razao_retencao.png",
+       width = 3000, height = 2500, units = "px", dpi = 300)
 
 # Mapa de regiões de saúde ------------------------------------------------
 
