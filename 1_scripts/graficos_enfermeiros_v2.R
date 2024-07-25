@@ -60,22 +60,26 @@ Enfermeiros_dfs_geral |>
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
-                           .desc = TRUE), y=retencao_geral), 
+                            .desc = TRUE), y=retencao_geral), 
          las=5) +
-    geom_boxplot(aes(fill=Região)) + theme_minimal() + xlab("Região") + 
-    ylab("Taxa de retenção") + 
-    scale_y_continuous(limits = c(0, 1), 
-                       breaks = seq(0, 1, by = 0.25)) + 
+  geom_boxplot(aes(fill=Região)) + theme_minimal() + xlab("Região") + 
+  ylab("Taxa de retenção") + 
+  scale_y_continuous(limits = c(0, 1), 
+                     breaks = seq(0, 1, by = 0.25)) + 
   
-    theme(
-      axis.text.x = element_text(size = 16),  
-      axis.text.y = element_text(size = 16),
-      legend.text = element_text(size = 16),
-      axis.title.x = element_text(size = 16),
-      axis.title.y = element_text(size = 16),
-      legend.position = "none"
-    )
-
+  theme(
+    axis.text.x = element_text(size = 16),  
+    axis.text.y = element_text(size = 16),
+    legend.text = element_text(size = 16),
+    axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16),
+    legend.position = "none"
+  ) +
+  geom_text(data = medianas_regiao, 
+            aes(x = Região, y = mediana, label = round(mediana, 2)),
+            position = position_nudge(x = 0.2, 
+                                      y = -0.02), 
+            size = 5)
 #  geom_text(data = medianas_regiao, 
 #            aes(x = Região, y = mediana, label = round(mediana, 2)),
 #            position = position_nudge(x = 0.2, 
@@ -131,7 +135,16 @@ Enfermeiros_dfs_geral |>
   theme_minimal() +
   xlab("UF") +
   ylab("Taxa de Retenção") +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25))
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) + 
+  geom_text(data = medianas, aes(x = uf, y = mediana, label = round(mediana, 2)), 
+            hjust = -0.3, size = 4) +  # Ajuste hjust e size conforme necessário
+  theme(
+    axis.text.x = element_text(size = 16),  
+    axis.text.y = element_text(size = 16),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 16),
+    legend.position = "bottom"
+  )
 
 #  geom_text(data = medianas, aes(x = uf, y = mediana, label = round(mediana, 2)), 
 #            hjust = -0.3, size = 4) +  # Ajuste hjust e size conforme necessário
@@ -145,23 +158,29 @@ Enfermeiros_dfs_geral |>
 # Retencao vs densidade ---------------------------------------------------
 
 
-retencao_uf <- Medico_dfs_geral |> 
+retencao_uf <- Enfermeiros_dfs_geral |> 
                     group_by(cod_uf, uf, regiao) |> 
                     summarise(media_retencao = mean(retencao_geral))
 
-razao <- read_excel("0_dados/razao_medicos.xlsx")
+razao <- read_excel("0_dados/razao_enfermeiros.xlsx")
 
 
 tbl_uf <- razao |> 
   inner_join(retencao_uf, by = "cod_uf")
 
+tbl_uf <- tbl_uf |> 
+  filter(UF != "DF")
+
 # Calcular o coeficiente de correlação e o valor p
 cor_test <- cor.test(tbl_uf$media_retencao, tbl_uf$Razão)
+cor_test
 
 # Extraindo o coeficiente de correlação e o valor p
 r <- round(cor_test$estimate, 3)
 p_value <- cor_test$p.value
 p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
+
+
 
 # Criar o gráfico com a anotação do coeficiente de correlação
 tbl_uf |> 
@@ -173,9 +192,9 @@ tbl_uf |>
   geom_smooth(method = "lm", se = FALSE) + 
   theme_minimal() + 
   xlab("Retenção") + 
-  ylab("Razão de médicos por 1000 habitantes") +
-  scale_x_continuous(limits = c(0, 1)) +  
-  scale_y_continuous(limits = c(0, 7)) +  
+  ylab("Razão de enfermeiros por 1000 habitantes") +
+  scale_x_continuous(limits = c(0.5, 0.75)) +  
+  scale_y_continuous(limits = c(0, 6)) +  
   theme(
     text = element_text(size = 16),          
     axis.title = element_text(size = 14),    
@@ -184,7 +203,7 @@ tbl_uf |>
     legend.text = element_text(size = 14),
     legend.position = "bottom"
   ) +
-  annotate("text", x = 0.8, y = 6.5, 
+  annotate("text", x = 0.7, y = 1, 
            label = paste("r =", r, ",", p_text),
            size = 6, hjust = 1)
 

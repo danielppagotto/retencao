@@ -140,6 +140,8 @@ grafico_uf <-
   theme(
     axis.text.x = element_text(size = 16),  
     axis.text.y = element_text(size = 16),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 16),
     legend.position = "bottom"
   )
 
@@ -159,8 +161,12 @@ razao <- read_excel("~/GitHub/retencao/0_dados/razao_medicos.xlsx")
 tbl_uf <- razao |> 
   inner_join(retencao_uf, by = "cod_uf")
 
+tbl_uf <- tbl_uf |> 
+  filter(uf != "Distrito Federal")
+
 # Calcular o coeficiente de correlação e o valor p
 cor_test <- cor.test(tbl_uf$media_retencao, tbl_uf$Razão)
+cor_test
 
 # Extraindo o coeficiente de correlação e o valor p
 r <- round(cor_test$estimate, 3)
@@ -168,6 +174,8 @@ p_value <- cor_test$p.value
 p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
 
 # Criar o gráfico com a anotação do coeficiente de correlação
+
+
 
 
 grafico_razao <- 
@@ -181,8 +189,8 @@ grafico_razao <-
   theme_minimal() + 
   xlab("Retenção") + 
   ylab("Razão de médicos por 1000 habitantes") +
-  scale_x_continuous(limits = c(0, 1)) +  
-  scale_y_continuous(limits = c(0, 7)) +  
+  scale_x_continuous(limits = c(0.35, 0.7)) +  
+  scale_y_continuous(limits = c(0, 4)) +  
   theme(
     text = element_text(size = 16),          
     axis.title = element_text(size = 14),    
@@ -191,10 +199,9 @@ grafico_razao <-
     legend.text = element_text(size = 14),
     legend.position = "bottom"
   ) +
-  annotate("text", x = 0.8, y = 6.5, 
+  annotate("text", x = 0.65, y = 1, 
            label = paste("r =", r, ",", p_text),
            size = 6, hjust = 1)
-
 grafico_razao
 
 r <- cor.test(tbl_uf$Razão, tbl_uf$media_retencao)
