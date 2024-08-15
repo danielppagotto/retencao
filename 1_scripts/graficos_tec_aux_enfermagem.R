@@ -46,6 +46,14 @@ Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |>
               rename(cod_regiao_saude = regiao_saude,
                      nome_regiao_saude = regiao_saude.y)
 
+ranking_regiao <-  Tec_aux_enf_dfs_geral |> 
+  select(uf, nome_regiao_saude, retencao_geral) |> 
+  relocate(uf, .before = nome_regiao_saude) |> 
+  relocate(retencao_geral, .after = nome_regiao_saude) |> 
+  mutate(Ranking = rank(-retencao_geral, ties.method = "first"), .before = uf)
+
+write_xlsx(ranking_regiao, "0_dados/ranking_regiao_tec_aux.xlsx")
+
 # Analises ----------------------------------------------------------------
 # 1) Boxplot por regiao ------------------------------------------------------
 
