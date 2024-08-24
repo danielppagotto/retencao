@@ -10,6 +10,8 @@ library(tmap)
 library(ggspatial)
 library(ggrepel)
 library(sf)
+library(writexl)
+
 
 
 # Importando dados
@@ -70,6 +72,14 @@ Enfermeiro_dfs_geral <- Enfermeiro_dfs_geral |>
                                          regiao == "Região Centro-Oeste" ~ 3,
                                          regiao == "Região Norte" ~ 4,
                                          regiao == "Região Nordeste" ~ 5))
+
+ranking_regiao <-  Enfermeiro_dfs_geral |> 
+  select(uf, nome_regiao_saude, retencao_geral) |> 
+  relocate(uf, .before = nome_regiao_saude) |> 
+  relocate(retencao_geral, .after = nome_regiao_saude) |> 
+  mutate(Ranking = rank(-retencao_geral, ties.method = "first"), .before = uf)
+
+write_xlsx(ranking_regiao, "0_dados/ranking_regiao_enfermeiros.xlsx")
 
 # por uf
 

@@ -97,6 +97,15 @@ media_uf <-
 
 mean(Dentistas_dfs_geral$retencao_geral)
 
+
+ranking_regiao <-  Dentistas_dfs_geral |> 
+  select(uf, nome_regiao_saude, retencao_geral) |> 
+  relocate(uf, .before = nome_regiao_saude) |> 
+  relocate(retencao_geral, .after = nome_regiao_saude) |> 
+  mutate(Ranking = rank(-retencao_geral, ties.method = "first"), .before = uf)
+
+write_xlsx(ranking_regiao, "0_dados/ranking_regiao_dentistas.xlsx")
+
 # Construindo boxplot por UF ----------------------------------------------
 
 Dentistas_dfs_geral <- Dentistas_dfs_geral |> 
