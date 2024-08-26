@@ -1,4 +1,4 @@
-# retencao
+# Retencao
 
 O presente repositório tem como objetivo reunir scripts para a análise de retenção em Python, bem como a geração dos gráficos em R e Python.
 
