@@ -94,7 +94,7 @@ media_uf <-
   summarise(media = mean(retencao_geral))
 
 
-mean(Medico_dfs_geral$retencao_geral)
+median(Medico_dfs_geral$retencao_geral)
 
 # Construindo boxplot por UF ----------------------------------------------
 
