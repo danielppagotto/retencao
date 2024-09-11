@@ -12,13 +12,12 @@ library(tmap)
 library(ggspatial)
 library(ggrepel)
 library(sf)
-library(writexl)
 
 # Importando dados --------------------------------------------------------
 
 # Dados de retencao
-Tec_aux_enf_dfs_geral <- 
-  read_delim("0_dados/Técnicos e auxiliares de enfermagem_retencao_geral.csv", 
+Tec_aux_sb_dfs_geral <- 
+  read_delim("0_dados/Técnico ou Auxiliar de Saúde Bucal_retencao_geral.csv", 
              delim = ";", 
              escape_double = FALSE, 
              trim_ws = TRUE) |> 
@@ -41,31 +40,31 @@ hierarquia_atualizada <-
 
 # juntando as bases
 
-Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |> 
+Tec_aux_sb_dfs_geral <- Tec_aux_sb_dfs_geral |> 
               left_join(hierarquia_atualizada, 
                         by = c("regiao_saude"="cod_regsaud")) |> 
               rename(cod_regiao_saude = regiao_saude,
                      nome_regiao_saude = regiao_saude.y)
 
-ranking_regiao <-  Tec_aux_enf_dfs_geral |> 
+ranking_regiao <-  Tec_aux_sb_dfs_geral |> 
   select(uf, nome_regiao_saude, retencao_geral) |> 
   relocate(uf, .before = nome_regiao_saude) |> 
   relocate(retencao_geral, .after = nome_regiao_saude) |> 
   mutate(Ranking = rank(-retencao_geral, ties.method = "first"), .before = uf)
 
-write_xlsx(ranking_regiao, "0_dados/ranking_regiao_tec_aux_sb.xlsx")
+write_xlsx(ranking_regiao, "0_dados/ranking_regiao_tec_aux.xlsx")
 
 # Analises ----------------------------------------------------------------
 # 1) Boxplot por regiao ------------------------------------------------------
 
-medianas_regiao <- Tec_aux_enf_dfs_geral %>%
+medianas_regiao <- Tec_aux_sb_dfs_geral %>%
   rename(Região = regiao) %>%
   mutate(Região = str_replace(Região, "^Região ", "")) %>%
   group_by(Região) %>%
   summarize(mediana = median(retencao_geral, na.rm = TRUE)) %>%
   ungroup()
 
-Tec_aux_enf_dfs_geral |> 
+Tec_aux_sb_dfs_geral |> 
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
@@ -107,7 +106,7 @@ mean(Tec_aux_enf_dfs_geral$retencao_geral)
 
 # Construindo boxplot por UF ----------------------------------------------
 
-Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |> 
+Tec_aux_sb_dfs_geral <- Tec_aux_sb_dfs_geral |> 
                       mutate(regiao_order = 
                                case_when(regiao == "Região Sul" ~ 1,
                                          regiao == "Região Sudeste" ~ 2,
@@ -117,28 +116,28 @@ Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |>
 
 # por uf
 
-median(Tec_aux_enf_dfs_geral$retencao_geral)
+median(Tec_aux_sb_dfs_geral$retencao_geral)
 
 # Calculando a mediana para cada grupo
-medianas <- Tec_aux_enf_dfs_geral %>%
+medianas <- Tec_aux_sb_dfs_geral %>%
   rename(Região = regiao) %>%
   group_by(uf, Região) %>%
   summarize(mediana = median(retencao_geral), .groups = 'drop') |> 
   filter(uf != "Distrito Federal")
 
 # Criando o gráfico por UF
-Tec_aux_regioes <- 
-  Tec_aux_enf_dfs_geral |>
+Tec_aux_sb_dfs_geral <- 
+  Tec_aux_sb_dfs_geral |>
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-Tec_aux_regioes |> 
+Tec_aux_sb_dfs_geral |> 
   filter(uf != "Distrito Federal") |> 
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região)) +
   coord_flip() +
-  geom_hline(yintercept = 0.6839712, 
+  geom_hline(yintercept = 0.6843686, 
              linetype = "dashed", 
              color = "red") +
   theme_minimal() +
