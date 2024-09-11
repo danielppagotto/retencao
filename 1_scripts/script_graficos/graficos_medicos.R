@@ -58,9 +58,10 @@ grafico_regiao <-
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
-                           .desc = TRUE), y=retencao_geral), 
+                           .desc = TRUE), y=retencao_geral, 
+             fill = "gray"), 
          las=5) +
-    geom_boxplot(aes(fill=Região)) + theme_minimal() + xlab("Região") + 
+    geom_boxplot(fill="gray") + theme_minimal() + xlab("Região") + 
     ylab("Taxa de retenção") + 
     scale_y_continuous(limits = c(0, 1), 
                        breaks = seq(0, 1, by = 0.25)) + 
@@ -79,8 +80,9 @@ grafico_regiao <-
                                       y = -0.02), 
             size = 5)
 
+grafico_regiao
 
-ggsave(grafico_regiao, filename = "retencao_regiao.pdf",
+ggsave(grafico_regiao, filename = "retencao_regiao_cinza.png",
        width = 3000, height = 2500, units = "px", dpi = 300)
 
 
@@ -92,7 +94,7 @@ media_uf <-
   summarise(media = mean(retencao_geral))
 
 
-mean(Medico_dfs_geral$retencao_geral)
+median(Medico_dfs_geral$retencao_geral)
 
 # Construindo boxplot por UF ----------------------------------------------
 
@@ -126,7 +128,7 @@ grafico_uf <-
   filter(uf != "Distrito Federal") |> 
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral)) +
-  geom_boxplot(aes(fill = Região)) +
+  geom_boxplot(fill = 'gray') +
   coord_flip() +
   geom_hline(yintercept = 0.510, 
              linetype = "dashed", 
@@ -145,7 +147,9 @@ grafico_uf <-
     legend.position = "bottom"
   )
 
-ggsave(grafico_uf, filename = "grafico_uf.pdf",
+grafico_uf
+
+ggsave(grafico_uf, filename = "grafico_uf_gray.png",
        width = 3000, height = 2500, units = "px", dpi = 300)
 
 # Retencao vs densidade ---------------------------------------------------
@@ -176,16 +180,14 @@ p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
 # Criar o gráfico com a anotação do coeficiente de correlação
 
 
-
-
 grafico_razao <- 
   tbl_uf |> 
   rename(Região = regiao) |> 
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x = media_retencao, y = Razão)) + 
   geom_point() + 
-  geom_label(aes(label = UF, fill = Região)) + 
-  geom_smooth(method = "lm", se = FALSE) + 
+  geom_label(aes(label = UF), fill = 'gray') + 
+  geom_smooth(method = "lm", se = FALSE, col = 'black') + 
   theme_minimal() + 
   xlab("Retenção") + 
   ylab("Razão de médicos por 1000 habitantes") +
@@ -202,12 +204,13 @@ grafico_razao <-
   annotate("text", x = 0.65, y = 1, 
            label = paste("r =", r, ",", p_text),
            size = 6, hjust = 1)
+
 grafico_razao
 
 r <- cor.test(tbl_uf$Razão, tbl_uf$media_retencao)
 r
 
-ggsave(grafico_razao, filename = "razao_retencao.png",
+ggsave(grafico_razao, filename = "razao_retencao_cinza.pdf",
        width = 3000, height = 2500, units = "px", dpi = 300)
 
 # Mapa de regiões de saúde ------------------------------------------------
