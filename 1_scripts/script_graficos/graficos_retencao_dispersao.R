@@ -3,14 +3,23 @@ library(tidyverse)
 library(ggplot2)
 library(GGally)
 library(patchwork)
+library(writexl)
 
 data_retencao <- read_excel("~/GitHub/retencao/0_dados/retencao_geral_completo.xlsx")
+
+data_retencao <- data_retencao |> 
+  rename("Médicos" = retencao_medicos,
+         "Enfermeiros" = retencao_enfermeiros,
+         "Cirurgiões-dentistas" = retencao_dentistas,
+         "Téc. e Aux. Enfermagem" = retencao_tec_aux_enf,
+         "Téc. e Aux. Saúde Bucal" = retencao_tec_aux_sb)
 
 #Gerando gráfico
 grafico <- 
   ggpairs(data_retencao,
-        columns = c("retencao_medicos", "retencao_enfermeiros", 
-                    "retencao_dentistas", "retencao_tec_aux_enf"),
+        columns = c("Médicos", "Enfermeiros", 
+                    "Cirurgiões-dentistas", "Téc. e Aux. Enfermagem",
+                    "Téc. e Aux. Saúde Bucal"),
         upper = list(continuous = "cor"),
         lower = list(continuous = "points"),
         mapping = aes(color = regiao),
@@ -84,7 +93,8 @@ retencao_UF <- data_retencao %>%
   summarize(retencao_medicos = median(retencao_medicos), 
             retencao_enfermeiros = median(retencao_enfermeiros),
             retencao_dentista = median(retencao_dentistas),
-            retencao_tec_aux_enf = median(retencao_tec_aux_enf)
+            retencao_tec_aux_enf = median(retencao_tec_aux_enf),
+            retencao_tec_aux_sb = median(retencao_tec_aux_sb)
             , .groups = 'drop')
 
 #Juntando as medianas de retenção por UF com a razao de profissionais por habitantes
@@ -126,6 +136,10 @@ ret_prof_hab <- ret_prof_hab %>%
                      "Sergipe" = "SE",
                      "Tocantins" = "TO"))
 
+ret_prof_hab <- ret_prof_hab |> 
+  filter(uf.x != "DF")
+
+
 #Gerando gráfico de dispersão (Médicos)
 
 g1 <- ggplot(ret_prof_hab, aes(x = retencao_medicos, y = razao_Médicos, label = uf.x, color = regiao)) +
@@ -163,7 +177,7 @@ g3 <- ggplot(ret_prof_hab, aes(x = retencao_dentista, y = razao_dentistas, label
   theme_minimal() +
   theme(legend.position = "right")
 
-#Gerando gráfico de dispersão (Téc e Aux de Enfermagem
+#Gerando gráfico de dispersão (Téc e Aux de Enfermagem)
 
 g4 <- ggplot(ret_prof_hab, aes(x = retencao_tec_aux_enf, y = razao_tec_aux_enf, label = uf.x, color = regiao)) +
   geom_point(size = 5) +
@@ -172,6 +186,18 @@ g4 <- ggplot(ret_prof_hab, aes(x = retencao_tec_aux_enf, y = razao_tec_aux_enf, 
                                 "Região Sudeste" = "blue", "Região Sul" = "purple")) +
   geom_smooth(method = "lm", se = FALSE, color = "blue") +
   labs(x = "Retenção", y = "Téc. e Aux. de Enfermagem por 1000 habitantes", color = "Região") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+#Gerando gráfico de dispersão (Téc e Aux de Saúde Bucal)
+
+g5 <- ggplot(ret_prof_hab, aes(x = retencao_tec_aux_sb, y = `razao_Técnicos e Auxiliares em Saúde Bucal`, label = uf.x, color = regiao)) +
+  geom_point(size = 5) +
+  geom_text(vjust = -1.5, hjust = 0.5, check_overlap = TRUE, color = "black", fontface = "bold") +  # Cor preta e negrito para as etiquetas
+  scale_color_manual(values = c("Região Centro-Oeste" = "red", "Região Nordeste" = "green", "Região Norte" = "cyan",
+                                "Região Sudeste" = "blue", "Região Sul" = "purple")) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(x = "Retenção", y = "Téc. e Aux. de Saúde Bucal por 1000 habitantes", color = "Região") +
   theme_minimal() +
   theme(legend.position = "right")
 

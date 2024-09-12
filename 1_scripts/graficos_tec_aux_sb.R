@@ -164,10 +164,8 @@ Tec_aux_sb_dfs_geral |>
 
 # Retencao vs densidade ---------------------------------------------------
 
+### IMPORTANTE: PARA GERAR O GRÁFICO É NECESSÁRIO RODAR DATAFRAME DO SCRIPT DE DISPERSÃO
 
-retencao_uf <- Tec_aux_enf_dfs_geral |> 
-                    group_by(cod_uf, uf, regiao) |> 
-                    summarise(media_retencao = mean(retencao_geral))
 
 razao <- read_excel("0_dados/razao_tec_aux_enf.xlsx")
 
@@ -179,7 +177,7 @@ tbl_uf <- tbl_uf |>
   filter(UF != "DF")
 
 # Calcular o coeficiente de correlação e o valor p
-cor_test <- cor.test(tbl_uf$media_retencao, tbl_uf$Razão)
+cor_test <- cor.test(ret_prof_hab$retencao_tec_aux_sb, ret_prof_hab$`razao_Técnicos e Auxiliares em Saúde Bucal`)
 
 # Extraindo o coeficiente de correlação e o valor p
 r <- round(cor_test$estimate, 3)
@@ -187,18 +185,18 @@ p_value <- cor_test$p.value
 p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
 
 # Criar o gráfico com a anotação do coeficiente de correlação
-tbl_uf |> 
+ret_prof_hab |> 
   rename(Região = regiao) |> 
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
-  ggplot(aes(x = media_retencao, y = Razão)) + 
+  ggplot(aes(x = retencao_tec_aux_sb, y = `razao_Técnicos e Auxiliares em Saúde Bucal`)) + 
   geom_point() + 
-  geom_label(aes(label = UF, fill = Região)) + 
+  geom_label(aes(label = uf.x, fill = Região)) + 
   geom_smooth(method = "lm", se = FALSE) + 
   theme_minimal() + 
   xlab("Retenção") + 
-  ylab("Razão de téc. e aux. de enfermagem por 1000 habitantes") +
+  ylab("Razão de téc. e aux. de saúde bucal por 1000 habitantes") +
   scale_x_continuous(limits = c(0.6, 0.8)) +  
-  scale_y_continuous(limits = c(6, 15)) +  
+  scale_y_continuous(limits = c(0, 2)) +  
   theme(
     text = element_text(size = 16),          
     axis.title = element_text(size = 14),    
@@ -207,7 +205,7 @@ tbl_uf |>
     legend.text = element_text(size = 14),
     legend.position = "bottom"
   ) +
-  annotate("text", x = 0.75, y = 7, 
+  annotate("text", x = 0.75, y = 0.1, 
            label = paste("r =", r, ",", p_text),
            size = 6, hjust = 1)
 
@@ -226,7 +224,7 @@ spdf_fortified <- sf::st_as_sf(spdf)
 sf::st_crs(latam) <- sf::st_crs(spdf_fortified)
 
 # Converter códigos de região de saúde para inteiros
-Tec_aux_enf_dfs_geral$cod_regiao_saude <- as.integer(Tec_aux_enf_dfs_geral$cod_regiao_saude)
+Tec_aux_sb_dfs_geral$cod_regiao_saude <- as.integer(Tec_aux_sb_dfs_geral$cod_regiao_saude)
 
 # Coordenadas das capitais
 capitais <- c("1100205","1302603","1200401","5002704","1600303","5300108",
@@ -248,7 +246,7 @@ limite_lat <- c(-33, 4)     # limites de latitude
 
 # Criar o mapa
 mapa <- spdf_fortified |>
-  left_join(Tec_aux_enf_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
+  left_join(Tec_aux_sb_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +
   geom_sf(data = spdf_fortified, fill = "lightgrey", color = "black") + 
