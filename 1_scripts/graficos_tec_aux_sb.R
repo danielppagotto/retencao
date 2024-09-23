@@ -12,13 +12,12 @@ library(tmap)
 library(ggspatial)
 library(ggrepel)
 library(sf)
-library(writexl)
 
 # Importando dados --------------------------------------------------------
 
 # Dados de retencao
-Tec_aux_enf_dfs_geral <- 
-  read_delim("0_dados/Técnicos e auxiliares de enfermagem_retencao_geral.csv", 
+Tec_aux_sb_dfs_geral <- 
+  read_delim("0_dados/Técnico ou Auxiliar de Saúde Bucal_retencao_geral.csv", 
              delim = ";", 
              escape_double = FALSE, 
              trim_ws = TRUE) |> 
@@ -41,31 +40,31 @@ hierarquia_atualizada <-
 
 # juntando as bases
 
-Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |> 
+Tec_aux_sb_dfs_geral <- Tec_aux_sb_dfs_geral |> 
               left_join(hierarquia_atualizada, 
                         by = c("regiao_saude"="cod_regsaud")) |> 
               rename(cod_regiao_saude = regiao_saude,
                      nome_regiao_saude = regiao_saude.y)
 
-ranking_regiao <-  Tec_aux_enf_dfs_geral |> 
+ranking_regiao <-  Tec_aux_sb_dfs_geral |> 
   select(uf, nome_regiao_saude, retencao_geral) |> 
   relocate(uf, .before = nome_regiao_saude) |> 
   relocate(retencao_geral, .after = nome_regiao_saude) |> 
   mutate(Ranking = rank(-retencao_geral, ties.method = "first"), .before = uf)
 
-write_xlsx(ranking_regiao, "0_dados/ranking_regiao_tec_aux_sb.xlsx")
+write_xlsx(ranking_regiao, "0_dados/ranking_regiao_tec_aux.xlsx")
 
 # Analises ----------------------------------------------------------------
 # 1) Boxplot por regiao ------------------------------------------------------
 
-medianas_regiao <- Tec_aux_enf_dfs_geral %>%
+medianas_regiao <- Tec_aux_sb_dfs_geral %>%
   rename(Região = regiao) %>%
   mutate(Região = str_replace(Região, "^Região ", "")) %>%
   group_by(Região) %>%
   summarize(mediana = median(retencao_geral, na.rm = TRUE)) %>%
   ungroup()
 
-Tec_aux_enf_dfs_geral |> 
+Tec_aux_sb_dfs_geral |> 
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
@@ -107,7 +106,7 @@ mean(Tec_aux_enf_dfs_geral$retencao_geral)
 
 # Construindo boxplot por UF ----------------------------------------------
 
-Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |> 
+Tec_aux_sb_dfs_geral <- Tec_aux_sb_dfs_geral |> 
                       mutate(regiao_order = 
                                case_when(regiao == "Região Sul" ~ 1,
                                          regiao == "Região Sudeste" ~ 2,
@@ -117,28 +116,28 @@ Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |>
 
 # por uf
 
-median(Tec_aux_enf_dfs_geral$retencao_geral)
+median(Tec_aux_sb_dfs_geral$retencao_geral)
 
 # Calculando a mediana para cada grupo
-medianas <- Tec_aux_enf_dfs_geral %>%
+medianas <- Tec_aux_sb_dfs_geral %>%
   rename(Região = regiao) %>%
   group_by(uf, Região) %>%
   summarize(mediana = median(retencao_geral), .groups = 'drop') |> 
   filter(uf != "Distrito Federal")
 
 # Criando o gráfico por UF
-Tec_aux_regioes <- 
-  Tec_aux_enf_dfs_geral |>
+Tec_aux_sb_dfs_geral <- 
+  Tec_aux_sb_dfs_geral |>
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-Tec_aux_regioes |> 
+Tec_aux_sb_dfs_geral |> 
   filter(uf != "Distrito Federal") |> 
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região)) +
   coord_flip() +
-  geom_hline(yintercept = 0.6839712, 
+  geom_hline(yintercept = 0.6843686, 
              linetype = "dashed", 
              color = "red") +
   theme_minimal() +
@@ -165,10 +164,8 @@ Tec_aux_regioes |>
 
 # Retencao vs densidade ---------------------------------------------------
 
+### IMPORTANTE: PARA GERAR O GRÁFICO É NECESSÁRIO RODAR DATAFRAME DO SCRIPT DE DISPERSÃO
 
-retencao_uf <- Tec_aux_enf_dfs_geral |> 
-                    group_by(cod_uf, uf, regiao) |> 
-                    summarise(media_retencao = mean(retencao_geral))
 
 razao <- read_excel("0_dados/razao_tec_aux_enf.xlsx")
 
@@ -180,7 +177,7 @@ tbl_uf <- tbl_uf |>
   filter(UF != "DF")
 
 # Calcular o coeficiente de correlação e o valor p
-cor_test <- cor.test(tbl_uf$media_retencao, tbl_uf$Razão)
+cor_test <- cor.test(ret_prof_hab$retencao_tec_aux_sb, ret_prof_hab$`razao_Técnicos e Auxiliares em Saúde Bucal`)
 
 # Extraindo o coeficiente de correlação e o valor p
 r <- round(cor_test$estimate, 3)
@@ -188,18 +185,18 @@ p_value <- cor_test$p.value
 p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
 
 # Criar o gráfico com a anotação do coeficiente de correlação
-tbl_uf |> 
+ret_prof_hab |> 
   rename(Região = regiao) |> 
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
-  ggplot(aes(x = media_retencao, y = Razão)) + 
+  ggplot(aes(x = retencao_tec_aux_sb, y = `razao_Técnicos e Auxiliares em Saúde Bucal`)) + 
   geom_point() + 
-  geom_label(aes(label = UF, fill = Região)) + 
+  geom_label(aes(label = uf.x, fill = Região)) + 
   geom_smooth(method = "lm", se = FALSE) + 
   theme_minimal() + 
   xlab("Retenção") + 
-  ylab("Razão de téc. e aux. de enfermagem por 1000 habitantes") +
+  ylab("Razão de téc. e aux. de saúde bucal por 1000 habitantes") +
   scale_x_continuous(limits = c(0.6, 0.8)) +  
-  scale_y_continuous(limits = c(6, 15)) +  
+  scale_y_continuous(limits = c(0, 2)) +  
   theme(
     text = element_text(size = 16),          
     axis.title = element_text(size = 14),    
@@ -208,7 +205,7 @@ tbl_uf |>
     legend.text = element_text(size = 14),
     legend.position = "bottom"
   ) +
-  annotate("text", x = 0.75, y = 7, 
+  annotate("text", x = 0.75, y = 0.1, 
            label = paste("r =", r, ",", p_text),
            size = 6, hjust = 1)
 
@@ -227,7 +224,7 @@ spdf_fortified <- sf::st_as_sf(spdf)
 sf::st_crs(latam) <- sf::st_crs(spdf_fortified)
 
 # Converter códigos de região de saúde para inteiros
-Tec_aux_enf_dfs_geral$cod_regiao_saude <- as.integer(Tec_aux_enf_dfs_geral$cod_regiao_saude)
+Tec_aux_sb_dfs_geral$cod_regiao_saude <- as.integer(Tec_aux_sb_dfs_geral$cod_regiao_saude)
 
 # Coordenadas das capitais
 capitais <- c("1100205","1302603","1200401","5002704","1600303","5300108",
@@ -249,7 +246,7 @@ limite_lat <- c(-33, 4)     # limites de latitude
 
 # Criar o mapa
 mapa <- spdf_fortified |>
-  left_join(Tec_aux_enf_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
+  left_join(Tec_aux_sb_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +
   geom_sf(data = spdf_fortified, fill = "lightgrey", color = "black") + 
