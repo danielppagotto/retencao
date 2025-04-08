@@ -223,9 +223,11 @@ grafico_razao <-
   geom_label(aes(label = UF, fill = Região)) + 
   geom_smooth(method = "lm", se = FALSE) + 
   theme_minimal() + 
-  xlab("Retenção") + 
+  labs(fill = "") +
+  xlab("Taxa de retenção") + 
   ylab("Razão de médicos por 1000 habitantes") +
-  scale_x_continuous(limits = c(0.35, 0.7)) +  
+  scale_x_continuous(limits = c(0.35, 0.7),
+                     labels = scales::percent_format(accuracy = 1)) +  
   scale_y_continuous(limits = c(0, 4)) +  
   theme(
     text = element_text(size = 16),          
@@ -243,7 +245,7 @@ grafico_razao
 r <- cor.test(tbl_uf$Razão, tbl_uf$media_retencao)
 r
 
-ggsave(grafico_razao, filename = "razao_retencao.png",
+ggsave(grafico_razao, filename = "correlacao_medicos.svg",
        width = 3000, height = 2500, units = "px", dpi = 300)
 
 # Mapa de regiões de saúde ------------------------------------------------
@@ -291,15 +293,31 @@ mapa <- spdf_fortified |>
   xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   scale_fill_gradientn(
-    colours = c("#d9f0a3", "#fee391", "#a6bddb", "#2b8cbe"),  # verde claro → bege → roxo escuro
+    colours = c("#fee391", "#fee391", "#a6bddb", "#2b8cbe"),
     limits = c(0, 1),
     breaks = seq(0, 1, by = 0.2),
+    labels = scales::percent_format(accuracy = 1),
     name = "Retenção"
   ) +
-  coord_sf(xlim = limite_long, ylim = limite_lat)
-
-mapa + 
+  coord_sf(xlim = limite_long, ylim = limite_lat) +
   ggspatial::annotation_north_arrow(
     style = ggspatial::north_arrow_nautical(
       fill = c("grey40", "white"),
-      line_col = "grey20"))
+      line_col = "grey20")) +
+  theme(
+    legend.position = c(0.95, 0.05),  # posição X (esquerda), Y (baixo)
+    legend.justification = c(1, 0),
+    legend.box = "horizontal",
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 14),  
+    axis.text.y = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    plot.title = element_text(size = 14),
+    panel.border = element_rect(color = "black", 
+                                fill = NA, 
+                                size = 1), 
+    plot.margin = margin(10, 10, 10, 10))
+
+ggsave(mapa, filename = "retencao_mapa_medicos.svg",
+       width = 3000, height = 2500, units = "px", dpi = 300)
