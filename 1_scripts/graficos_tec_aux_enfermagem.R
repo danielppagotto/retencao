@@ -254,7 +254,7 @@ spdf <- geojson_read("1_scripts/shape file regioes saude.json", what = "sp")
 spdf_fortified <- sf::st_as_sf(spdf)
 
 # Definir o CRS de latam para ser o mesmo que o do shapefile carregado
-sf::st_crs(latam) <- sf::st_crs(spdf_fortified)
+st_crs(spdf_fortified) <- 4326
 
 # Converter códigos de região de saúde para inteiros
 Tec_aux_enf_dfs_geral$cod_regiao_saude <- as.integer(Tec_aux_enf_dfs_geral$cod_regiao_saude)
@@ -280,43 +280,51 @@ limite_lat <- c(-33, 4)     # limites de latitude
 # Criar o mapa
 
 mapa <- spdf_fortified |>
-  left_join(Tec_aux_enf_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
+  left_join(Tec_aux_enf_dfs_geral, by = c("reg_id" = "cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +
   geom_sf(data = spdf_fortified, fill = "lightgrey", color = "#bbbbbb", alpha = 0.8) + 
   geom_sf(aes(fill = Retenção)) +
   geom_point(data = capitais_coord, aes(x = longitude, y = latitude), color = "blue", size = 1) +
-  geom_text_repel(data = capitais_coord, aes(label = municipio, longitude, y = latitude),
-                  size = 4.5,
-                  fontface = "bold") +
+  geom_text_repel(
+    data = capitais_coord,
+    aes(label = municipio, x = longitude, y = latitude),
+    size = 4.5,
+    fontface = "bold"
+  ) +
   xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   scale_fill_gradientn(
-    colours = c("#fee391","#eeeeee","#2b8cbe"),
+    colours = c("#fee391", "#fee391", "#a6bddb", "#2b8cbe"),
     limits = c(0, 1),
-    breaks = seq(0, 1, by = 0.2),
+    breaks = seq(0, 1, by = 0.25),
     labels = scales::percent_format(accuracy = 1),
-    name = "Retenção"
+    name = "Taxa de retenção",
   ) +
   coord_sf(xlim = limite_long, ylim = limite_lat) +
   ggspatial::annotation_north_arrow(
+    location = "tr",
+    which_north = "true",
     style = ggspatial::north_arrow_nautical(
       fill = c("grey40", "white"),
-      line_col = "grey20")) +
+      line_col = "grey20"
+    )
+  ) +
+  annotation_scale(location = "bl", width_hint = 0.3) +
   theme(
-    legend.position = c(0.95, 0.05),  # posição X (esquerda), Y (baixo)
+    legend.position = c(0.95, 0.05),
     legend.justification = c(1, 0),
     legend.box = "horizontal",
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
-    axis.text.x = element_text(size = 14),  
+    axis.text.x = element_text(size = 14),
     axis.text.y = element_text(size = 14),
-    legend.text = element_text(size = 14),
+    legend.text = element_text(size = 10),
+    legend.title = element_text(size = 12, face = "bold" ,margin = margin(b = 10)),
     plot.title = element_text(size = 14),
-    panel.border = element_rect(color = "black", 
-                                fill = NA, 
-                                size = 1), 
-    plot.margin = margin(10, 10, 10, 10))
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    plot.margin = margin(10, 10, 10, 10)
+  )
 
 ggsave(mapa, filename = "retencao_mapa_tec_aux_enf.svg",
        width = 3000, height = 2500, units = "px", dpi = 300)
