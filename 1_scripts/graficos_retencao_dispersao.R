@@ -8,20 +8,27 @@ data_retencao <- read_excel("~/GitHub/retencao/0_dados/retencao_geral_completo.x
 
 #Gerando gráfico
 grafico <- 
-  ggpairs(data_retencao,
-        columns = c("retencao_medicos", "retencao_enfermeiros", 
-                    "retencao_dentistas", "retencao_tec_aux_enf"),
-        upper = list(continuous = "cor"),
-        lower = list(continuous = "points"),
-        mapping = aes(color = regiao),
-        title = "Gráficos de Dispersão: Taxas de Retenção por Ocupação",
-        xlab = "Taxa de Retenção",
-        ylab = "Taxa de Retenção") + theme_minimal()
+  ggpairs(
+    data_retencao,
+    columns = c("retencao_medicos", "retencao_enfermeiros", 
+                "retencao_dentistas", "retencao_tec_aux_enf", "retencao_tec_aux_sb"),
+    upper = list(continuous = "cor"),
+    lower = list(continuous = "points"),
+    mapping = aes(color = regiao),
+    labeller = as_labeller(c(
+      retencao_medicos = "Médicos",
+      retencao_enfermeiros = "Enfermeiros",
+      retencao_dentistas = "Dentistas",
+      retencao_tec_aux_enf = "Téc./Aux. Enfermagem",
+      retencao_tec_aux_sb = "Téc./Aux. Saúde Bucal"
+    )),
+    title = "Gráficos de Dispersão: Taxas de Retenção por Ocupação"
+  ) + theme_minimal()
 
 grafico
 
-ggsave(grafico, filename = "grafico.jpeg",
-       width = 3000, height = 3000, units = "px", dpi = 300)
+ggsave(grafico, filename = "grafico_matriz_dispersao.svg",
+       width = 6000, height = 4000, units = "px", dpi = 500)
 
 #Baixando a base
 profissionais_uf <- read_excel("~/GitHub/retencao/0_dados/profissionais_conselhos.xlsx")

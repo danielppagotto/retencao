@@ -16,13 +16,27 @@ library(sf)
 # Importando dados --------------------------------------------------------
 
 # Dados de retencao
-Tec_aux_sb_dfs_geral <- 
-  read_delim("0_dados/Técnico ou Auxiliar de Saúde Bucal_retencao_geral.csv", 
-             delim = ";", 
-             escape_double = FALSE, 
-             trim_ws = TRUE) |> 
-  select(-`...1`) |> 
-  mutate(regiao_saude = as.character(regiao_saude))
+# codigo para acessar dados de datalake proprio 
+dremio_host <- Sys.getenv("endereco")
+dremio_port <- Sys.getenv("port")
+dremio_uid <- Sys.getenv("uid")
+dremio_pwd <- Sys.getenv("datalake")
+channel <- odbcDriverConnect(
+  sprintf("DRIVER=Dremio Connector;
+                             HOST=%s;
+                             PORT=%s;
+                             UID=%s;
+                             PWD=%s;
+                                     AUTHENTICATIONTYPE=Basic Authentication;
+                                     CONNECTIONTYPE=Direct", 
+          dremio_host, 
+          dremio_port, 
+          dremio_uid, 
+          dremio_pwd))
+query <- 'SELECT * FROM Dados.retencao."Técnico ou Auxiliar de Saúde Bucal_retencao_geral.parquet"'
+Tec_aux_sb_dfs_geral <- sqlQuery(channel, query, 
+                                  as.is = TRUE)
+
 
 # Dados da hierarquia
 
@@ -64,13 +78,16 @@ medianas_regiao <- Tec_aux_sb_dfs_geral %>%
   summarize(mediana = median(retencao_geral, na.rm = TRUE)) %>%
   ungroup()
 
-Tec_aux_sb_dfs_geral |> 
+grafico_regiao <- 
+  Tec_aux_sb_dfs_geral |> 
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x= fct_reorder(Região, retencao_geral, 
                             .desc = TRUE), y=retencao_geral), 
          las=5) +
-  geom_boxplot(aes(fill=Região)) + theme_minimal() + xlab("Região") + 
+  geom_boxplot(fill= 	"#5DADE2", color = "#595959") + 
+  theme_minimal() + 
+  xlab("") + 
   ylab("Taxa de retenção") + 
   scale_y_continuous(limits = c(0, 1), 
                      breaks = seq(0, 1, by = 0.25)) + 
@@ -80,19 +97,25 @@ Tec_aux_sb_dfs_geral |>
     axis.text.y = element_text(size = 16),
     legend.text = element_text(size = 16),
     axis.title.x = element_text(size = 16),
-    axis.title.y = element_text(size = 16),
+    axis.title.y = element_text(size = 16, face = "bold", color = "#595959"),
     legend.position = "none"
   ) +
+  scale_y_continuous(
+    limits = c(0,1),
+    breaks = seq(0, 1, by = 0.2),
+    label = scales::label_percent(accuracy = 1)
+  ) +
   geom_text(data = medianas_regiao, 
-            aes(x = Região, y = mediana, label = round(mediana, 2)),
+            aes(x = Região,
+                y = mediana, 
+                label = paste0(round(mediana*100, 0), "%")),
             position = position_nudge(x = 0.2, 
                                       y = -0.02), 
-            size = 5)
-#  geom_text(data = medianas_regiao, 
-#            aes(x = Região, y = mediana, label = round(mediana, 2)),
-#            position = position_nudge(x = 0.2, 
-#                                      y = -0.02), 
-#            size = 5)
+            size = 4,
+            fontface = "bold")
+
+ggsave(grafico_regiao, filename = "retencao_boxplot_tec_aux_sb_regiao.svg",
+       width = 4300, height = 3500, units = "px", dpi = 500)
 
 # Calculando medidas resumo da variável "retencao_geral" por Região
 
@@ -131,21 +154,27 @@ Tec_aux_sb_dfs_geral <-
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-Tec_aux_sb_dfs_geral |> 
+grafico_uf <- 
+  Tec_aux_sb_dfs_geral |> 
   filter(uf != "Distrito Federal") |> 
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral)) +
-  geom_boxplot(aes(fill = Região)) +
+  geom_boxplot(aes(fill = regiao), color = "#595959") +
   coord_flip() +
-  geom_hline(yintercept = 0.6843686, 
+  geom_hline(yintercept = 0.5578, 
              linetype = "dashed", 
              color = "red") +
+  scale_fill_discrete(name = NULL) +
   theme_minimal() +
-  xlab("UF") +
+  xlab("") +
   ylab("Taxa de Retenção") +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25)) + 
-  geom_text(data = medianas, aes(x = uf, y = mediana, label = round(mediana, 2)), 
-            hjust = -0.3, size = 4) +  # Ajuste hjust e size conforme necessário
+  scale_y_continuous(limits = c(0, 1), 
+                     breaks = seq(0, 1, by = 0.25),
+                     label = scales::label_percent(accuracy = 1)) + 
+  geom_text(data = medianas, aes(x = uf, y = mediana, label = paste0(round(mediana*100,0), "%")), 
+            hjust = -0.3, 
+            size = 4,
+            fontface = "bold") +  # Ajuste hjust e size conforme necessário
   theme(
     axis.text.x = element_text(size = 16),  
     axis.text.y = element_text(size = 16),
@@ -153,19 +182,18 @@ Tec_aux_sb_dfs_geral |>
     legend.title = element_text(size = 16),
     legend.position = "bottom"
   )
-#  geom_text(data = medianas, aes(x = uf, y = mediana, label = round(mediana, 2)), 
-#            hjust = -0.3, size = 4) +  # Ajuste hjust e size conforme necessário
-#  theme(
-#    axis.text.x = element_text(size = 16),  
-#    axis.text.y = element_text(size = 16),
-#    legend.position = "bottom"
-#  )
+
+ggsave(grafico_uf, filename = "retencao_boxplot_tec_aux_sb_uf.svg",
+       width = 5500, height = 5000, units = "px", dpi = 500)
 
 
 # Retencao vs densidade ---------------------------------------------------
 
 ### IMPORTANTE: PARA GERAR O GRÁFICO É NECESSÁRIO RODAR DATAFRAME DO SCRIPT DE DISPERSÃO
 
+retencao_uf <- Tec_aux_sb_dfs_geral |> 
+  group_by(cod_uf, uf, regiao) |> 
+  summarise(media_retencao = mean(retencao_geral))
 
 razao <- read_excel("0_dados/razao_tec_aux_enf.xlsx")
 
@@ -177,7 +205,7 @@ tbl_uf <- tbl_uf |>
   filter(UF != "DF")
 
 # Calcular o coeficiente de correlação e o valor p
-cor_test <- cor.test(ret_prof_hab$retencao_tec_aux_sb, ret_prof_hab$`razao_Técnicos e Auxiliares em Saúde Bucal`)
+cor_test <- cor.test(tbl_uf$media_retencao, tbl_uf$Razão)
 
 # Extraindo o coeficiente de correlação e o valor p
 r <- round(cor_test$estimate, 3)
@@ -185,18 +213,21 @@ p_value <- cor_test$p.value
 p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
 
 # Criar o gráfico com a anotação do coeficiente de correlação
-ret_prof_hab |> 
+grafico_razao <-
+  tbl_uf |> 
   rename(Região = regiao) |> 
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
-  ggplot(aes(x = retencao_tec_aux_sb, y = `razao_Técnicos e Auxiliares em Saúde Bucal`)) + 
+  ggplot(aes(x = media_retencao, y = Razão)) + 
   geom_point() + 
-  geom_label(aes(label = uf.x, fill = Região)) + 
+  geom_label(aes(label = UF, fill = Região)) + 
   geom_smooth(method = "lm", se = FALSE) + 
   theme_minimal() + 
-  xlab("Retenção") + 
-  ylab("Razão de téc. e aux. de saúde bucal por 1000 habitantes") +
-  scale_x_continuous(limits = c(0.6, 0.8)) +  
-  scale_y_continuous(limits = c(0, 2)) +  
+  labs(fill = "") +
+  xlab("Taxa de retenção") + 
+  ylab("Razão de médicos por 1000 habitantes") +
+  scale_x_continuous(limits = c(0.4, 0.7),
+                     labels = scales::percent_format(accuracy = 1)) +  
+  scale_y_continuous(limits = c(6, 19)) +  
   theme(
     text = element_text(size = 16),          
     axis.title = element_text(size = 14),    
@@ -205,9 +236,12 @@ ret_prof_hab |>
     legend.text = element_text(size = 14),
     legend.position = "bottom"
   ) +
-  annotate("text", x = 0.75, y = 0.1, 
+  annotate("text", x = 0.65, y = 7, 
            label = paste("r =", r, ",", p_text),
            size = 6, hjust = 1)
+
+ggsave(grafico_razao, filename = "correlacao_tec_aux_sb.svg",
+       width = 3000, height = 2500, units = "px", dpi = 300)
 
 
 r <- cor.test(tbl_uf$Razão, tbl_uf$media_retencao)
@@ -221,7 +255,7 @@ spdf <- geojson_read("1_scripts/shape file regioes saude.json", what = "sp")
 spdf_fortified <- sf::st_as_sf(spdf)
 
 # Definir o CRS de latam para ser o mesmo que o do shapefile carregado
-sf::st_crs(latam) <- sf::st_crs(spdf_fortified)
+st_crs(spdf_fortified) <- 4326
 
 # Converter códigos de região de saúde para inteiros
 Tec_aux_sb_dfs_geral$cod_regiao_saude <- as.integer(Tec_aux_sb_dfs_geral$cod_regiao_saude)
@@ -246,20 +280,51 @@ limite_lat <- c(-33, 4)     # limites de latitude
 
 # Criar o mapa
 mapa <- spdf_fortified |>
-  left_join(Tec_aux_sb_dfs_geral, by = c("reg_id"="cod_regiao_saude")) |>
+  left_join(Tec_aux_sb_dfs_geral, by = c("reg_id" = "cod_regiao_saude")) |>
   rename(Retenção = retencao_geral) |> 
   ggplot() +
-  geom_sf(data = spdf_fortified, fill = "lightgrey", color = "black") + 
+  geom_sf(data = spdf_fortified, fill = "lightgrey", color = "#bbbbbb", alpha = 0.8) + 
   geom_sf(aes(fill = Retenção)) +
   geom_point(data = capitais_coord, aes(x = longitude, y = latitude), color = "blue", size = 1) +
-  geom_text_repel(data = capitais_coord, aes(label = municipio, longitude, y = latitude)) +
+  geom_text_repel(
+    data = capitais_coord,
+    aes(label = municipio, x = longitude, y = latitude),
+    size = 4.5,
+    fontface = "bold"
+  ) +
   xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
-  scale_fill_gradient(low = "#d43621", high = "#91e17c", n.breaks = 5) +
-  coord_sf(xlim = limite_long, ylim = limite_lat)
-
-mapa + 
+  scale_fill_gradientn(
+    colours = c("#fee391", "#fee391", "#a6bddb", "#2b8cbe"),
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.25),
+    labels = scales::percent_format(accuracy = 1),
+    name = "Taxa de retenção",
+  ) +
+  coord_sf(xlim = limite_long, ylim = limite_lat) +
   ggspatial::annotation_north_arrow(
+    location = "tr",
+    which_north = "true",
     style = ggspatial::north_arrow_nautical(
       fill = c("grey40", "white"),
-      line_col = "grey20"))
+      line_col = "grey20"
+    )
+  ) +
+  annotation_scale(location = "bl", width_hint = 0.3) +
+  theme(
+    legend.position = c(0.95, 0.05),
+    legend.justification = c(1, 0),
+    legend.box = "horizontal",
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14),
+    legend.text = element_text(size = 10),
+    legend.title = element_text(size = 12, face = "bold" ,margin = margin(b = 10)),
+    plot.title = element_text(size = 14),
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    plot.margin = margin(10, 10, 10, 10)
+  )
+
+ggsave(mapa, filename = "retencao_mapa_tec_sb_enf.svg",
+       width = 3000, height = 2500, units = "px", dpi = 300)
