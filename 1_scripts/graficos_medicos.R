@@ -64,6 +64,18 @@ Medico_dfs_geral <-
               rename(cod_regiao_saude = regiao_saude,
                      nome_regiao_saude = regiao_saude.y)
 
+ranking_10maiores <- Medico_dfs_geral |> 
+  select(regiao,uf, nome_regiao_saude, retencao_geral) |> 
+  mutate(retencao = round(retencao_geral*100,0)) |> 
+  slice_max(retencao_geral, n = 10)
+
+ranking_10menores <- Medico_dfs_geral |> 
+  select(uf, nome_regiao_saude, retencao_geral) |> 
+  mutate(retencao = round(retencao_geral*100,0)) |> 
+  slice_min(retencao_geral, n = 10)
+
+  
+
 # Analises ----------------------------------------------------------------
 # 1) Boxplot por regiao ------------------------------------------------------
 

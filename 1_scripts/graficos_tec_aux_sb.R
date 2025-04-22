@@ -66,6 +66,17 @@ ranking_regiao <-  Tec_aux_sb_dfs_geral |>
   relocate(retencao_geral, .after = nome_regiao_saude) |> 
   mutate(Ranking = rank(-retencao_geral, ties.method = "first"), .before = uf)
 
+ranking_10maiores <- Tec_aux_sb_dfs_geral |> 
+  select(regiao,uf, nome_regiao_saude, retencao_geral) |> 
+  mutate(retencao = round(retencao_geral*100,0)) |> 
+  slice_max(retencao_geral, n = 10)
+
+ranking_10menores <- Tec_aux_sb_dfs_geral |> 
+  select(uf, nome_regiao_saude, retencao_geral) |> 
+  mutate(retencao = round(retencao_geral*100,0)) |> 
+  slice_min(retencao_geral, n = 10)
+
+
 write_xlsx(ranking_regiao, "0_dados/ranking_regiao_tec_aux.xlsx")
 
 # Analises ----------------------------------------------------------------
@@ -120,12 +131,12 @@ ggsave(grafico_regiao, filename = "retencao_boxplot_tec_aux_sb_regiao.svg",
 # Calculando medidas resumo da variável "retencao_geral" por Região
 
 media_uf <- 
-  Tec_aux_enf_dfs_geral |> 
+  Tec_aux_sb_dfs_geral |> 
   group_by(uf) |> 
   summarise(media = mean(retencao_geral))
 
 
-mean(Tec_aux_enf_dfs_geral$retencao_geral)
+mean(Tec_aux_sb_dfs_geral$retencao_geral)
 
 # Construindo boxplot por UF ----------------------------------------------
 
@@ -159,7 +170,7 @@ grafico_uf <-
   filter(uf != "Distrito Federal") |> 
   ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
              y = retencao_geral)) +
-  geom_boxplot(aes(fill = regiao), color = "#595959") +
+  geom_boxplot(aes(fill = Região), color = "#595959") +
   coord_flip() +
   geom_hline(yintercept = 0.5578, 
              linetype = "dashed", 
@@ -325,6 +336,9 @@ mapa <- spdf_fortified |>
     panel.border = element_rect(color = "black", fill = NA, size = 1),
     plot.margin = margin(10, 10, 10, 10)
   )
+
+
+
 
 ggsave(mapa, filename = "retencao_mapa_tec_sb_enf.svg",
        width = 3000, height = 2500, units = "px", dpi = 300)

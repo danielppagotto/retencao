@@ -4,7 +4,137 @@ library(ggplot2)
 library(GGally)
 library(patchwork)
 
-data_retencao <- read_excel("~/GitHub/retencao/0_dados/retencao_geral_completo.xlsx")
+# codigo para acessar dados de datalake proprio 
+dremio_host <- Sys.getenv("endereco")
+dremio_port <- Sys.getenv("port")
+dremio_uid <- Sys.getenv("uid")
+dremio_pwd <- Sys.getenv("datalake")
+channel <- odbcDriverConnect(
+  sprintf("DRIVER=Dremio Connector;
+                             HOST=%s;
+                             PORT=%s;
+                             UID=%s;
+                             PWD=%s;
+                                     AUTHENTICATIONTYPE=Basic Authentication;
+                                     CONNECTIONTYPE=Direct", 
+          dremio_host, 
+          dremio_port, 
+          dremio_uid, 
+          dremio_pwd))
+query <- 'SELECT * FROM Dados.retencao."Médico_retencao_geral.parquet"'
+Medico_dfs_geral <- sqlQuery(channel, query, 
+                             as.is = TRUE)
+
+dremio_host <- Sys.getenv("endereco")
+dremio_port <- Sys.getenv("port")
+dremio_uid <- Sys.getenv("uid")
+dremio_pwd <- Sys.getenv("datalake")
+channel <- odbcDriverConnect(
+  sprintf("DRIVER=Dremio Connector;
+                             HOST=%s;
+                             PORT=%s;
+                             UID=%s;
+                             PWD=%s;
+                                     AUTHENTICATIONTYPE=Basic Authentication;
+                                     CONNECTIONTYPE=Direct", 
+          dremio_host, 
+          dremio_port, 
+          dremio_uid, 
+          dremio_pwd))
+query <- 'SELECT * FROM Dados.retencao."Cirurgiões-dentistas_retencao_geral.parquet"'
+Dentistas_dfs_geral <- sqlQuery(channel, query, 
+                                as.is = TRUE)
+
+
+dremio_host <- Sys.getenv("endereco")
+dremio_port <- Sys.getenv("port")
+dremio_uid <- Sys.getenv("uid")
+dremio_pwd <- Sys.getenv("datalake")
+channel <- odbcDriverConnect(
+  sprintf("DRIVER=Dremio Connector;
+                             HOST=%s;
+                             PORT=%s;
+                             UID=%s;
+                             PWD=%s;
+                                     AUTHENTICATIONTYPE=Basic Authentication;
+                                     CONNECTIONTYPE=Direct", 
+          dremio_host, 
+          dremio_port, 
+          dremio_uid, 
+          dremio_pwd))
+query <- 'SELECT * FROM Dados.retencao."Enfermeiro_retencao_geral.parquet"'
+Enfermeiros_dfs_geral <- sqlQuery(channel, query, 
+                                  as.is = TRUE)
+
+dremio_host <- Sys.getenv("endereco")
+dremio_port <- Sys.getenv("port")
+dremio_uid <- Sys.getenv("uid")
+dremio_pwd <- Sys.getenv("datalake")
+channel <- odbcDriverConnect(
+  sprintf("DRIVER=Dremio Connector;
+                             HOST=%s;
+                             PORT=%s;
+                             UID=%s;
+                             PWD=%s;
+                                     AUTHENTICATIONTYPE=Basic Authentication;
+                                     CONNECTIONTYPE=Direct", 
+          dremio_host, 
+          dremio_port, 
+          dremio_uid, 
+          dremio_pwd))
+query <- 'SELECT * FROM Dados.retencao."Técnicos e auxiliares de enfermagem_retencao_geral.parquet"'
+Tec_aux_enf_dfs_geral <- sqlQuery(channel, query, 
+                                  as.is = TRUE)
+
+dremio_host <- Sys.getenv("endereco")
+dremio_port <- Sys.getenv("port")
+dremio_uid <- Sys.getenv("uid")
+dremio_pwd <- Sys.getenv("datalake")
+channel <- odbcDriverConnect(
+  sprintf("DRIVER=Dremio Connector;
+                             HOST=%s;
+                             PORT=%s;
+                             UID=%s;
+                             PWD=%s;
+                                     AUTHENTICATIONTYPE=Basic Authentication;
+                                     CONNECTIONTYPE=Direct", 
+          dremio_host, 
+          dremio_port, 
+          dremio_uid, 
+          dremio_pwd))
+query <- 'SELECT * FROM Dados.retencao."Técnico ou Auxiliar de Saúde Bucal_retencao_geral.parquet"'
+Tec_aux_sb_dfs_geral <- sqlQuery(channel, query, 
+                                 as.is = TRUE)
+
+
+Medico_dfs_geral <- Medico_dfs_geral |> 
+  rename(retencao_medicos = retencao_geral)
+
+Dentistas_dfs_geral <- Dentistas_dfs_geral |> 
+  rename(retencao_dentistas = retencao_geral)
+
+Enfermeiros_dfs_geral <- Enfermeiros_dfs_geral |> 
+  rename(retencao_enfermeiros = retencao_geral)
+
+Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |> 
+  rename(retencao_tec_aux_enf = retencao_geral)
+
+Tec_aux_sb_dfs_geral <- Tec_aux_sb_dfs_geral |> 
+  rename(retencao_tec_aux_sb = retencao_geral)
+
+lista_retencao <- list(Medico_dfs_geral, Dentistas_dfs_geral, Enfermeiros_dfs_geral,
+                       Tec_aux_enf_dfs_geral, Tec_aux_sb_dfs_geral)
+
+data_retencao <- reduce(lista_retencao, left_join, by = "regiao_saude")
+
+hierarquia_completa <- 
+  read_csv("0_dados/hierarquia_atualizada.csv") |> 
+  select(cod_regsaud, regiao) |> 
+  mutate(cod_regsaud = as.character(cod_regsaud))
+
+data_retencao <- data_retencao |> 
+  left_join(hierarquia_completa, by = c("regiao_saude" = "cod_regsaud"))
+
 
 #Gerando gráfico
 grafico <- 
