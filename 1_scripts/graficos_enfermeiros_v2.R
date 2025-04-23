@@ -66,7 +66,7 @@ ranking_10maiores <- Enfermeiros_dfs_geral |>
   slice_max(retencao_geral, n = 10)
 
 ranking_10menores <- Enfermeiros_dfs_geral |> 
-  select(uf, nome_regiao_saude, retencao_geral) |> 
+  select(regiao, uf, nome_regiao_saude, retencao_geral) |> 
   mutate(retencao = round(retencao_geral*100,0)) |> 
   slice_min(retencao_geral, n = 10)
 

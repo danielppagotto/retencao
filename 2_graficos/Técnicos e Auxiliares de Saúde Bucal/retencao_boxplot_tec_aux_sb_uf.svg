@@ -242,30 +242,30 @@
 <text x='618.64' y='659.02' text-anchor='middle' style='font-size: 16.00px;fill: #4D4D4D; font-family: "Arial";' textLength='32.03px' lengthAdjust='spacingAndGlyphs'>75%</text>
 <text x='758.54' y='659.02' text-anchor='middle' style='font-size: 16.00px;fill: #4D4D4D; font-family: "Arial";' textLength='40.92px' lengthAdjust='spacingAndGlyphs'>100%</text>
 <text x='478.75' y='673.00' text-anchor='middle' style='font-size: 11.00px; font-family: "Arial";' textLength='88.70px' lengthAdjust='spacingAndGlyphs'>Taxa de Retenção</text>
-<polyline points='140.69,707.31 140.69,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='140.69,696.08 140.69,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<rect x='134.21' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #F8766D;' />
-<polyline points='134.21,700.40 147.17,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='320.12,707.31 320.12,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='320.12,696.08 320.12,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<rect x='313.64' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #A3A500;' />
-<polyline points='313.64,700.40 326.60,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='468.43,707.31 468.43,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='468.43,696.08 468.43,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<rect x='461.95' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #00BF7D;' />
-<polyline points='461.95,700.40 474.91,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='590.95,707.31 590.95,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='590.95,696.08 590.95,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<rect x='584.47' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #00B0F6;' />
-<polyline points='584.47,700.40 597.43,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='733.05,707.31 733.05,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<polyline points='733.05,696.08 733.05,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<rect x='726.57' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #E76BF3;' />
-<polyline points='726.57,700.40 739.53,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
-<text x='154.81' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='151.19px' lengthAdjust='spacingAndGlyphs'>Região Centro-Oeste</text>
-<text x='334.24' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='120.07px' lengthAdjust='spacingAndGlyphs'>Região Nordeste</text>
-<text x='482.55' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='94.28px' lengthAdjust='spacingAndGlyphs'>Região Norte</text>
-<text x='605.07' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='113.86px' lengthAdjust='spacingAndGlyphs'>Região Sudeste</text>
-<text x='747.16' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='78.28px' lengthAdjust='spacingAndGlyphs'>Região Sul</text>
+<polyline points='278.57,707.31 278.57,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='278.57,696.08 278.57,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<rect x='272.09' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #F8766D;' />
+<polyline points='272.09,700.40 285.05,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='402.84,707.31 402.84,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='402.84,696.08 402.84,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<rect x='396.36' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #A3A500;' />
+<polyline points='396.36,700.40 409.32,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='496.01,707.31 496.01,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='496.01,696.08 496.01,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<rect x='489.53' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #00BF7D;' />
+<polyline points='489.53,700.40 502.49,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='563.37,707.31 563.37,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='563.37,696.08 563.37,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<rect x='556.89' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #00B0F6;' />
+<polyline points='556.89,700.40 569.85,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='650.32,707.31 650.32,704.72 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polyline points='650.32,696.08 650.32,693.49 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<rect x='643.84' y='696.08' width='12.96' height='8.64' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter; fill: #E76BF3;' />
+<polyline points='643.84,700.40 656.80,700.40 ' style='stroke-width: 1.07; stroke: #595959; stroke-linecap: butt; stroke-linejoin: miter;' />
+<text x='292.69' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='96.03px' lengthAdjust='spacingAndGlyphs'>Centro-Oeste</text>
+<text x='416.96' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='64.92px' lengthAdjust='spacingAndGlyphs'>Nordeste</text>
+<text x='510.13' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='39.12px' lengthAdjust='spacingAndGlyphs'>Norte</text>
+<text x='577.49' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='58.71px' lengthAdjust='spacingAndGlyphs'>Sudeste</text>
+<text x='664.44' y='706.13' style='font-size: 16.00px; font-family: "Arial";' textLength='23.13px' lengthAdjust='spacingAndGlyphs'>Sul</text>
 </g>
 </svg>
