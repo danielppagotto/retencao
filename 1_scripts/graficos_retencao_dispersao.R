@@ -122,14 +122,17 @@ Tec_aux_enf_dfs_geral <- Tec_aux_enf_dfs_geral |>
 Tec_aux_sb_dfs_geral <- Tec_aux_sb_dfs_geral |> 
   rename(retencao_tec_aux_sb = retencao_geral)
 
-lista_retencao <- list(Medico_dfs_geral, Dentistas_dfs_geral, Enfermeiros_dfs_geral,
-                       Tec_aux_enf_dfs_geral, Tec_aux_sb_dfs_geral)
 
-data_retencao <- reduce(lista_retencao, left_join, by = "regiao_saude")
+data_retencao <- Medico_dfs_geral %>%
+  left_join(Dentistas_dfs_geral, by = "regiao_saude") %>%
+  left_join(Enfermeiros_dfs_geral, by = "regiao_saude") %>%
+  left_join(Tec_aux_enf_dfs_geral, by = "regiao_saude") %>%
+  left_join(Tec_aux_sb_dfs_geral, by = "regiao_saude")
 
 hierarquia_completa <- 
   read_csv("0_dados/hierarquia_atualizada.csv") |> 
   select(cod_regsaud, regiao) |> 
+  distinct(cod_regsaud, regiao) |> 
   mutate(cod_regsaud = as.character(cod_regsaud))
 
 data_retencao <- data_retencao |> 

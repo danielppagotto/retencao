@@ -235,7 +235,7 @@ grafico_razao <-
   theme_minimal() + 
   labs(fill = "") +
   xlab("Taxa de retenção") + 
-  ylab("Razão de médicos por 1000 habitantes") +
+  ylab("Razão de téc./aux. de saúde bucal por 1000 habitantes") +
   scale_x_continuous(limits = c(0.4, 0.7),
                      labels = scales::percent_format(accuracy = 1)) +  
   scale_y_continuous(limits = c(6, 19)) +  

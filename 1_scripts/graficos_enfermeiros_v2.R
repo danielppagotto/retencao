@@ -193,7 +193,7 @@ ggsave(grafico_uf, filename = "retencao_boxplot_enfermeiros_uf.svg",
 
 
 retencao_uf <- Enfermeiros_dfs_geral |> 
-                    group_by(cod_uf, uf, Região) |> 
+                    group_by(cod_uf, uf, regiao) |> 
                     summarise(media_retencao = mean(retencao_geral))
 
 razao <- read_excel("0_dados/razao_enfermeiros.xlsx")
@@ -219,7 +219,7 @@ p_text <- ifelse(p_value < 0.01, "p < 0.01", paste("p =", round(p_value, 3)))
 # Criar o gráfico com a anotação do coeficiente de correlação
 grafico_razao <- 
   tbl_uf |> 
-  rename(Região = Região) |> 
+  rename(Região = regiao) |> 
   mutate(Região = str_replace(Região, "^Região ", "")) |> 
   ggplot(aes(x = media_retencao, y = Razão)) + 
   geom_point() + 
@@ -228,7 +228,7 @@ grafico_razao <-
   theme_minimal() + 
   labs(fill = "") +
   xlab("Taxa de retenção") + 
-  ylab("Razão de médicos por 1000 habitantes") +
+  ylab("Razão de enfermeiros por 1000 habitantes") +
   scale_x_continuous(limits = c(0.5, 0.75),
                      labels = scales::percent_format(accuracy = 1)) +  
   scale_y_continuous(limits = c(0, 6, by = 2)) +  

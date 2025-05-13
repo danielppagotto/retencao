@@ -233,7 +233,7 @@ tbl_uf |>
   theme_minimal() + 
   labs(fill = "") +
   xlab("Taxa de retenção") + 
-  ylab("Razão de médicos por 1000 habitantes") +
+  ylab("Razão de téc./aux. de enfermagem por 1000 habitantes") +
   scale_x_continuous(limits = c(0.6, 0.8),
                      labels = scales::percent_format(accuracy = 1)) +  
   scale_y_continuous(limits = c(6, 19)) +  
