@@ -167,11 +167,11 @@ Tec_aux_enf_dfs_geral <-
 grafico_uf <- 
   Tec_aux_enf_dfs_geral |> 
   filter(uf != "Distrito Federal") |> 
-  ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
+  ggplot(aes(x = fct_reorder(uf, retencao_geral, .desc = FALSE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região), color = "#595959") +
   coord_flip() +
-  geom_hline(yintercept = 0.6838, 
+  geom_hline(yintercept = 0.6833, 
              linetype = "dashed", 
              color = "red") +
   scale_fill_discrete(name = NULL) +

@@ -150,7 +150,7 @@ Tec_aux_sb_dfs_geral <- Tec_aux_sb_dfs_geral |>
 
 # por uf
 
-median(Tec_aux_sb_dfs_geral$retencao_geral)
+median(Tec_aux_sb_dfs_geral$retencao_geral[Tec_aux_sb_dfs_geral$uf != "Distrito Federal"])
 
 # Calculando a mediana para cada grupo
 medianas <- Tec_aux_sb_dfs_geral %>%
@@ -165,14 +165,14 @@ Tec_aux_sb_dfs_geral <-
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-grafico_uf <- 
+grafico_uf <-
   Tec_aux_sb_dfs_geral |> 
   filter(uf != "Distrito Federal") |> 
-  ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
+  ggplot(aes(x = fct_reorder(uf, retencao_geral, .desc = FALSE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região), color = "#595959") +
   coord_flip() +
-  geom_hline(yintercept = 0.5578, 
+  geom_hline(yintercept = 0.4555, 
              linetype = "dashed", 
              color = "red") +
   scale_fill_discrete(name = NULL) +

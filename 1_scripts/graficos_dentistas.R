@@ -165,14 +165,14 @@ Dentistas_regioes <-
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-grafico_uf <- 
+grafico_uf <-
   Dentistas_regioes |> 
   filter(uf != "Distrito Federal") |> 
-  ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
+  ggplot(aes(x = fct_reorder(uf, retencao_geral, .desc = FALSE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região), color = "#595959") +
   coord_flip() +
-  geom_hline(yintercept = 0.6405, 
+  geom_hline(yintercept = 0.6374, 
              linetype = "dashed", 
              color = "red") +
   scale_fill_discrete(name = NULL) +

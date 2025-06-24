@@ -13,7 +13,7 @@ library(ggspatial)
 library(ggrepel)
 library(sf)
 library(geobr)
-
+library(forcats)
 # Importando dados --------------------------------------------------------
 
 # Dados de retencao
@@ -145,7 +145,6 @@ median(Enfermeiros_dfs_geral$retencao_geral[Enfermeiros_dfs_geral$uf != "Distrit
 
 # Calculando a mediana para cada grupo
 medianas <- Enfermeiros_dfs_geral %>%
-  rename(Região = regiao) %>%
   group_by(uf, Região) %>%
   summarize(mediana = median(retencao_geral), .groups = 'drop') |> 
   filter(uf != "Distrito Federal")
@@ -154,12 +153,12 @@ medianas <- Enfermeiros_dfs_geral %>%
 Enfermeiros_dfs_geral <- 
   Enfermeiros_dfs_geral |>
   rename(Região = regiao) |>
-  mutate(Região = str_replace(Região, "^Região ", "")) 
+  mutate(Região = str_replace(Região, "^Região ", ""))
 
-grafico_uf <- 
+grafico_uf <-
   Enfermeiros_dfs_geral |> 
   filter(uf != "Distrito Federal") |> 
-  ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
+  ggplot(aes(x = fct_reorder(uf, retencao_geral, .desc = FALSE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região), color = "#595959") +
   coord_flip() +

@@ -149,7 +149,7 @@ Medico_dfs_geral <- Medico_dfs_geral |>
 
 # por uf
 
-median(Medico_dfs_geral$retencao_geral)
+median(Medico_dfs_geral$retencao_geral[Medico_dfs_geral$uf != "Distrito Federal"])
 
 # Calculando a mediana para cada grupo
 medianas <- Medico_dfs_geral %>%
@@ -164,14 +164,14 @@ Medicos_regioes <-
   rename(Região = regiao) |>
   mutate(Região = str_replace(Região, "^Região ", "")) 
 
-grafico_uf <- 
+grafico_uf <-
   Medicos_regioes |> 
   filter(uf != "Distrito Federal") |> 
-  ggplot(aes(x = fct_reorder(uf, regiao_order, .desc = TRUE), 
+  ggplot(aes(x = fct_reorder(uf, retencao_geral, .desc = FALSE), 
              y = retencao_geral)) +
   geom_boxplot(aes(fill = Região), color = "#595959") +
   coord_flip() +
-  geom_hline(yintercept = 0.510, 
+  geom_hline(yintercept = 0.4998, 
              linetype = "dashed", 
              color = "red") +
   scale_fill_discrete(name = NULL) +
