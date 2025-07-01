@@ -4,6 +4,7 @@ library(geojsonio)
 library(ggrepel)
 library(ggspatial)
 library(sf)
+library(writexl)
 
 
 retencao_anestesiologista <- read.csv("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/0_dados/Anestesiologista_retencao_geral.csv",
@@ -25,7 +26,16 @@ hierarquia_atualizada <-
 
 data_anestesiologista <- hierarquia_atualizada %>% 
   left_join(retencao_anestesiologista, by = c("cod_regsaud" = "regiao_saude")) %>% 
-  mutate(retencao_geral = if_else(is.na(retencao_geral), 0, retencao_geral))
+  mutate(retencao_geral = if_else(is.na(retencao_geral), 0, retencao_geral)) |> 
+  mutate(regiao = str_remove(regiao, "^Região "))
+
+
+ranking_10maiores <- data_anestesiologista |> 
+  select(regiao, uf, regiao_saude, cod_regsaud, retencao_geral) |> 
+  slice_max(retencao_geral, n = 10)
+
+write_xlsx(ranking_10maiores, 
+          "C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/0_dados/ranking_10maiores_anestesiologista.xlsx")
 
 spdf <- geojson_read("1_scripts/shape file regioes saude.json", what = "sp")
 spdf_fortified <- sf::st_as_sf(spdf) %>% 
