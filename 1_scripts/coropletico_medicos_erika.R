@@ -26,8 +26,8 @@ data_medicos <- hierarquia_atualizada %>%
   left_join(retencao_medicos, by = c("cod_regsaud" = "cod_regsaud"))
 
 ranking_10maiores <- data_medicos |> 
-  select(regiao, uf, regiao_saude, cod_regsaud, retencao_geral) |> 
-  slice_max(retencao_geral, n = 10) |> 
+  select(regiao, uf, regiao_saude, cod_regsaud, retencao) |> 
+  slice_max(retencao, n = 10) |> 
   mutate(regiao = str_remove(regiao, "^Região "))
 
 write_xlsx(ranking_10maiores, 
@@ -74,7 +74,7 @@ cloropetico <- spdf_fortified |>
   xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   scale_fill_gradientn(
-    colours = c( "red", "#F7F7F7", "#2166AC"),
+    colours = c( "#fee391", "#fee391", "#a6bddb", "#2b8cbe"),
     limits = c(0, 1),
     breaks = seq(0, 1, by = 0.25),
     labels = scales::percent_format(accuracy = 1),
