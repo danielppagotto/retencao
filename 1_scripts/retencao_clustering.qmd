@@ -1,0 +1,275 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## 1. Análise de clustering de retenção de profissionais de saúde.
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(readxl)
+library(ggfortify)
+library(ggplot2)
+library(NbClust)
+library(geojsonio)
+library(sf)
+```
+
+```{r}
+options(scipe = 999)
+
+ret_medicos <- read.csv("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/Médico_retencao_geral.csv", sep = ";") |> 
+  select(-X) |> 
+  rename(medicos = retencao_geral)
+
+ret_dentistas <- read.csv("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/Cirurgiões-dentistas_retencao_geral.csv", sep = ";") |> 
+  select(-X) |> 
+  rename(dentistas = retencao_geral)
+
+ret_enfermeiros <- read.csv("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/Enfermeiro_retencao_geral.csv", sep = ";") |> 
+  select(-X) |> 
+  rename(enfermeiros = retencao_geral)
+
+ret_fisioterapeutas <- read.csv("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/Fisioterapeuta_retencao_geral.csv", sep = ";") |> 
+  select(-X) |> 
+  rename(fisioterapeutas = retencao_geral)
+
+retencao <- ret_medicos |> 
+  left_join(ret_dentistas, by = "regiao_saude") |> 
+  left_join(ret_enfermeiros, by = "regiao_saude") |> 
+  left_join(ret_fisioterapeutas, by = "regiao_saude") |> 
+  mutate(regiao_saude = as.character(regiao_saude))
+```
+
+```{r}
+retencao %>% 
+  ggplot(aes(x = medicos)) +
+  geom_density()
+
+retencao %>% 
+  ggplot(aes(x = dentistas)) +
+  geom_density()
+
+retencao %>% 
+  ggplot(aes(x = enfermeiros)) +
+  geom_density()
+
+retencao %>% 
+  ggplot(aes(x = fisioterapeutas)) +
+  geom_density()
+```
+
+### 1.1. Índicadores de número de clusters.
+
+A seguir, iremos testar, de acordo com diversos indicadores, qual número de clusters representa o melhor agrupamento. O método utilizado será o mais tradicional, K-means com distância euclidiana.
+
+```{r}
+nc <- NbClust(retencao[2:5],
+              min.nc = 2,
+              max.nc = 7,
+              method = "kmeans",
+              distance = "euclidean",
+              index = "all")
+```
+
+De acordo com os resultados, o 12 índices indicaram 2 como o melhor número de clusters, e 4 sugeriram 3 e 4. Portanto, primeiramente testaremos com 2, e depois 3 e 4.
+
+### 1.2. Testando com dois clusters.
+
+A seguir, é feito o clustering com dois clusters, e reduziremos a dimensionalidade por meio PCA () para visualização gráfica.
+
+```{r}
+rownames(retencao) <- retencao$regiao_saude
+
+#Clutering
+kmeans <- kmeans(retencao[2:5], centers = 2)
+
+#Redução de dimensionalidade
+pca_kmeans <- prcomp(retencao[2:5], scale. = TRUE)
+pca_kmeans <- as.data.frame(pca_kmeans$x)
+pca_kmeans$cluster <- as.factor(kmeans$cluster)
+pca_kmeans <- pca_kmeans |> 
+  rownames_to_column("regiao_saude")
+
+#Plotando o gráfico em duas dimensões com os clusters
+pca_kmeans |> 
+  ggplot(aes(x = PC1,
+             y = PC2,
+             color = cluster)) +
+  geom_point() +
+  geom_label(aes(label = regiao_saude)) +
+  theme_minimal()
+```
+
+Plotaremos box-plots da taxa de retenção dos profissionais de saúde por cluster.
+
+```{r}
+retencao %>% 
+  mutate(cluster = factor(kmeans$cluster)) %>% 
+  pivot_longer(cols = 2:5,
+             names_to = "categoria",
+             values_to = "retencao") %>% 
+  ggplot(aes(x = cluster, y = retencao, fill = cluster)) +
+  geom_boxplot() +
+  facet_wrap(~ categoria, ncol = 2)
+```
+
+```{r}
+spdf_fortified <- sf::st_read("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/1_scripts/shape file regioes saude.json") %>%
+  select(reg_id, geometry)
+
+st_crs(spdf_fortified) <- 4326
+
+# Coordenadas das capitais
+capitais <- c("1100205","1302603","1200401","5002704","1600303","5300108",
+              "1400100","5103403","1721000","3550308","2211001","3304557",
+              "1501402","5208707","2927408","4205407","2111300","2704302",
+              "4314902","4106902","3106200","2304400","2611606","2507507",
+              "2800308","2408102","3205309")
+
+# Definir limites de longitude e latitude para focar no Brasil
+limite_long <- c(-75, -28)  # limites de longitude
+limite_lat <- c(-33, 4)     # limites de latitude
+
+pca_kmeans$regiao_saude <- as.integer(pca_kmeans$regiao_saude)
+
+data_mapa <- spdf_fortified %>% 
+  left_join(pca_kmeans, by = c("reg_id" = "regiao_saude"))
+
+spdf_fortified %>% 
+  left_join(pca_kmeans, by = c("reg_id" = "regiao_saude")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = as.factor(cluster)))
+```
+
+### 1.2. Testando com três clusters.
+
+```{r}
+rownames(retencao) <- retencao$regiao_saude
+
+#Clutering
+kmeans <- kmeans(retencao[2:5], centers = 3)
+
+#Redução de dimensionalidade
+pca_kmeans <- prcomp(retencao[2:5], scale. = TRUE)
+pca_kmeans <- as.data.frame(pca_kmeans$x)
+pca_kmeans$cluster <- as.factor(kmeans$cluster)
+pca_kmeans <- pca_kmeans |> 
+  rownames_to_column("regiao_saude")
+
+#Plotando o gráfico em duas dimensões com os clusters
+pca_kmeans |> 
+  ggplot(aes(x = PC1,
+             y = PC2,
+             color = cluster)) +
+  geom_point() +
+  geom_label(aes(label = regiao_saude)) +
+  theme_minimal()
+```
+
+```{r}
+retencao %>% 
+  mutate(cluster = factor(kmeans$cluster)) %>% 
+  pivot_longer(cols = 2:5,
+             names_to = "categoria",
+             values_to = "retencao") %>% 
+  ggplot(aes(x = cluster, y = retencao, fill = cluster)) +
+  geom_boxplot() +
+  facet_wrap(~ categoria, ncol = 2)
+```
+
+```{r}
+spdf_fortified <- sf::st_read("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/1_scripts/shape file regioes saude.json") %>%
+  select(reg_id, geometry)
+
+st_crs(spdf_fortified) <- 4326
+
+# Coordenadas das capitais
+capitais <- c("1100205","1302603","1200401","5002704","1600303","5300108",
+              "1400100","5103403","1721000","3550308","2211001","3304557",
+              "1501402","5208707","2927408","4205407","2111300","2704302",
+              "4314902","4106902","3106200","2304400","2611606","2507507",
+              "2800308","2408102","3205309")
+
+# Definir limites de longitude e latitude para focar no Brasil
+limite_long <- c(-75, -28)  # limites de longitude
+limite_lat <- c(-33, 4)     # limites de latitude
+
+pca_kmeans$regiao_saude <- as.integer(pca_kmeans$regiao_saude)
+
+data_mapa <- spdf_fortified %>% 
+  left_join(pca_kmeans, by = c("reg_id" = "regiao_saude"))
+
+spdf_fortified %>% 
+  left_join(pca_kmeans, by = c("reg_id" = "regiao_saude")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = as.factor(cluster)))
+```
+
+### 1.3. Testando com quatro clusters.
+
+```{r}
+rownames(retencao) <- retencao$regiao_saude
+
+#Clutering
+kmeans <- kmeans(retencao[2:5], centers = 4)
+
+#Redução de dimensionalidade
+pca_kmeans <- prcomp(retencao[2:5], scale. = TRUE)
+pca_kmeans <- as.data.frame(pca_kmeans$x)
+pca_kmeans$cluster <- as.factor(kmeans$cluster)
+pca_kmeans <- pca_kmeans |> 
+  rownames_to_column("regiao_saude")
+
+#Plotando o gráfico em duas dimensões com os clusters
+pca_kmeans |> 
+  ggplot(aes(x = PC1,
+             y = PC2,
+             color = cluster)) +
+  geom_point() +
+  geom_label(aes(label = regiao_saude)) +
+  theme_minimal()
+```
+
+```{r}
+retencao %>% 
+  mutate(cluster = factor(kmeans$cluster)) %>% 
+  pivot_longer(cols = 2:5,
+             names_to = "categoria",
+             values_to = "retencao") %>% 
+  ggplot(aes(x = cluster, y = retencao, fill = cluster)) +
+  geom_boxplot() +
+  facet_wrap(~ categoria, ncol = 2)
+```
+
+```{r}
+
+spdf_fortified <- sf::st_read("C:/Users/alefs/OneDrive/Documentos/LAPEI-CIGETS/GitHub/retencao/1_scripts/shape file regioes saude.json") %>%
+  select(reg_id, geometry)
+
+st_crs(spdf_fortified) <- 4326
+
+# Coordenadas das capitais
+capitais <- c("1100205","1302603","1200401","5002704","1600303","5300108",
+              "1400100","5103403","1721000","3550308","2211001","3304557",
+              "1501402","5208707","2927408","4205407","2111300","2704302",
+              "4314902","4106902","3106200","2304400","2611606","2507507",
+              "2800308","2408102","3205309")
+
+# Definir limites de longitude e latitude para focar no Brasil
+limite_long <- c(-75, -28)  # limites de longitude
+limite_lat <- c(-33, 4)     # limites de latitude
+
+pca_kmeans$regiao_saude <- as.integer(pca_kmeans$regiao_saude)
+
+data_mapa <- spdf_fortified %>% 
+  left_join(pca_kmeans, by = c("reg_id" = "regiao_saude"))
+
+spdf_fortified %>% 
+  left_join(pca_kmeans, by = c("reg_id" = "regiao_saude")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = as.factor(cluster)))
+```
